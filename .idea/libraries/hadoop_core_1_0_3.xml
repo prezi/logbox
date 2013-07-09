@@ -3,6 +3,7 @@
     <CLASSES>
       <root url="jar://$PROJECT_DIR$/../hadoop-1.0.3/hadoop-core-1.0.3.jar!/" />
       <root url="file://$PROJECT_DIR$/../hadoop-1.0.3/lib" />
+      <root url="jar://$PROJECT_DIR$/lib/gson-2.2.4.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>

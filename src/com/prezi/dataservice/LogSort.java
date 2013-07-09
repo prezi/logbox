@@ -1,8 +1,11 @@
 package com.prezi.dataservice;
 
+import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
+import com.google.gson.Gson;
 import org.apache.commons.cli.*;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.conf.*;
@@ -21,12 +24,11 @@ public class LogSort {
 
     public static class Map extends Mapper<LongWritable, Text, NullWritable, Text> {
         private Text word = new Text();
-        private MultipleOutputs<NullWritable,Text> multipleOutputs;
+        private MultipleOutputs<NullWritable, Text> multipleOutputs;
 
         @Override
         protected void setup(Context context)
-            throws IOException, InterruptedException
-        {
+                throws IOException, InterruptedException {
             multipleOutputs = new MultipleOutputs<NullWritable, Text>(context);
 
         }
@@ -34,28 +36,27 @@ public class LogSort {
         @Override
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
             String line = value.toString();
-            if (line.trim().isEmpty()){
+            if (line.trim().isEmpty()) {
                 return;
             }
 
             word.set(line);
-            String path = line.substring(0,1);
+            String path = line.substring(0, 1);
             multipleOutputs.write(NullWritable.get(), word, path + "/part");
         }
 
         @Override
         protected void cleanup(Context context)
-            throws IOException, InterruptedException
-        {
+                throws IOException, InterruptedException {
             multipleOutputs.close();
         }
     }
 
-    private static Options createCommandLineOptions(){
+    private static Options createCommandLineOptions() {
         Options options = new Options();
 
         options.addOption("r", "run", false, "Run logsort on hadoop");
-        options.addOption("l", "local", false, "Run logsort locally");
+        options.addOption("l", "local-test", false, "Run logsort locally");
 
         options.addOption(
                 OptionBuilder
@@ -84,28 +85,94 @@ public class LogSort {
                         .create("c")
         );
 
+        options.addOption(
+                OptionBuilder.withValueSeparator(',')
+                        .withLongOpt("rule-filters")
+                        .withDescription("Comma separated list of the rules to be executed, in the form of [logcategory].[rulename]")
+                        .hasArg()
+                        .withArgName("filters")
+                        .create("f")
+        );
+
         return options;
     }
 
-    private static void printCommandLineHelp(final Options options){
+    private static void printCommandLineHelp(final Options options) {
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("java -jar logsort.jar [OPTION]",options);
+        formatter.printHelp("java -jar logsort.jar [OPTION]", options);
     }
+
+    private static Options cliOptions;
+
+    private static void failWithCliParamError(final String error) {
+        printCommandLineHelp(cliOptions);
+        System.err.println("ERROR: " + (error));
+        System.exit(101);
+
+    }
+
+    private static void parseRuleConfig(File configFile){
+        Gson gson = new Gson();
+
+    }
+
 
     public static void main(String[] args) throws Exception {
 
-        Options cliOptions = createCommandLineOptions();
-        printCommandLineHelp(cliOptions);
-
-        System.exit(0);
+        cliOptions = createCommandLineOptions();
 
         CommandLineParser parser = new BasicParser();
 
         try {
-            CommandLine line = parser.parse( cliOptions, args );
+            CommandLine cli = parser.parse(cliOptions, args);
 
-        }
-        catch (Exception e){
+            if (!cli.hasOption("run") && !cli.hasOption("local-test"))
+                failWithCliParamError("Please choose from --run or --local execution modes");
+
+            if (cli.hasOption("run")) {
+                if (!cli.hasOption("start-date")) failWithCliParamError("Please specify a start-date");
+                if (!cli.hasOption("end-date")) failWithCliParamError("Please specify an end-date");
+
+                String startDateStr = cli.getOptionValue("start-date");
+                String endDateStr = cli.getOptionValue("end-date");
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+
+                Date startDate;
+                Date endDate;
+
+                try {
+                    startDate = dateFormat.parse(startDateStr);
+                } catch (java.text.ParseException e) {
+                    failWithCliParamError("Invalid date for start date.\n" + endDateStr.toString());
+                }
+
+                try {
+                    endDate = dateFormat.parse(endDateStr);
+                } catch (java.text.ParseException e) {
+                    failWithCliParamError("Invalid date for end date.\n" + endDateStr.toString());
+                }
+
+                String configFileName = "config.json";
+                File configFile;
+
+                if (cli.hasOption("config")){
+                    configFileName = cli.getOptionValue("config");
+                }
+                configFile = new File(configFileName);
+                if ( !configFile.isFile() || !configFile.canRead()){
+                    failWithCliParamError("Config file " + configFileName + " doesn't exists or not readable");
+                }
+
+                parseRuleConfig( configFile );
+
+
+
+
+
+
+
+            }
+        } catch (Exception e) {
             e.printStackTrace();
             System.exit(101);
         }
