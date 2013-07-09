@@ -3,6 +3,7 @@ package com.prezi.dataservice;
 import java.io.IOException;
 import java.util.*;
 
+import org.apache.commons.cli.*;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.conf.*;
 import org.apache.hadoop.io.*;
@@ -12,6 +13,8 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+
+import static org.apache.commons.cli.OptionBuilder.*;
 
 
 public class LogSort {
@@ -48,7 +51,66 @@ public class LogSort {
         }
     }
 
+    private static Options createCommandLineOptions(){
+        Options options = new Options();
+
+        options.addOption("r", "run", false, "Run logsort on hadoop");
+        options.addOption("l", "local", false, "Run logsort locally");
+
+        options.addOption(
+                OptionBuilder
+                        .withLongOpt("start-date")
+                        .withDescription("The date to run logsort from (YYYY-MM-DD)")
+                        .hasArg()
+                        .withArgName("date")
+                        .create("s")
+        );
+
+        options.addOption(
+                OptionBuilder
+                        .withLongOpt("end-date")
+                        .withDescription("The date to run logsort until (YYYY-MM-DD)")
+                        .hasArg()
+                        .withArgName("date")
+                        .create("e")
+        );
+
+        options.addOption(
+                OptionBuilder
+                        .withLongOpt("config")
+                        .withDescription("path to the config.json file")
+                        .hasArg()
+                        .withArgName("file")
+                        .create("c")
+        );
+
+        return options;
+    }
+
+    private static void printCommandLineHelp(final Options options){
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp("java -jar logsort.jar [OPTION]",options);
+    }
+
     public static void main(String[] args) throws Exception {
+
+        Options cliOptions = createCommandLineOptions();
+        printCommandLineHelp(cliOptions);
+
+        System.exit(0);
+
+        CommandLineParser parser = new BasicParser();
+
+        try {
+            CommandLine line = parser.parse( cliOptions, args );
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            System.exit(101);
+        }
+
+        System.exit(0);
         Configuration conf = new Configuration();
 
         Job job = new Job(conf, "logsort");
