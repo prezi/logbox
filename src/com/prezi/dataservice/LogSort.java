@@ -1,23 +1,26 @@
 package com.prezi.dataservice;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-
-import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import org.apache.commons.cli.*;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.conf.*;
-import org.apache.hadoop.io.*;
-import org.apache.hadoop.mapreduce.*;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-import static org.apache.commons.cli.OptionBuilder.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 
 public class LogSort {
@@ -111,12 +114,6 @@ public class LogSort {
 
     }
 
-    private static void parseRuleConfig(File configFile){
-        Gson gson = new Gson();
-
-    }
-
-
     public static void main(String[] args) throws Exception {
 
         cliOptions = createCommandLineOptions();
@@ -155,22 +152,20 @@ public class LogSort {
                 String configFileName = "config.json";
                 File configFile;
 
-                if (cli.hasOption("config")){
+                if (cli.hasOption("config")) {
                     configFileName = cli.getOptionValue("config");
                 }
                 configFile = new File(configFileName);
-                if ( !configFile.isFile() || !configFile.canRead()){
+                if (!configFile.isFile() || !configFile.canRead()) {
                     failWithCliParamError("Config file " + configFileName + " doesn't exists or not readable");
                 }
-
-                parseRuleConfig( configFile );
-
-
-
-
-
-
-
+                try {
+                    LogSortConfiguration.loadConfig(configFile);
+                } catch (FileNotFoundException e) {
+                    failWithCliParamError("Config file " + configFileName + " doesn't exists or not readable");
+                } catch (JsonSyntaxException e) {
+                    //TODO: Fail here
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -178,6 +173,7 @@ public class LogSort {
         }
 
         System.exit(0);
+
         Configuration conf = new Configuration();
 
         Job job = new Job(conf, "logsort");
