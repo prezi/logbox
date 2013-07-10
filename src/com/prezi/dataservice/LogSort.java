@@ -1,7 +1,10 @@
 package com.prezi.dataservice;
 
 import com.google.gson.JsonSyntaxException;
+import com.prezi.dataservice.logsort.config.LogSortConfiguration;
 import org.apache.commons.cli.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
@@ -24,6 +27,8 @@ import java.util.Locale;
 
 
 public class LogSort {
+    private static Log log = LogFactory.getLog(LogSort.class);
+    private static LogSortConfiguration logSortConfiguration;
 
     public static class Map extends Mapper<LongWritable, Text, NullWritable, Text> {
         private Text word = new Text();
@@ -89,11 +94,12 @@ public class LogSort {
         );
 
         options.addOption(
-                OptionBuilder.withValueSeparator(',')
+                OptionBuilder
                         .withLongOpt("rule-filters")
                         .withDescription("Comma separated list of the rules to be executed, in the form of [logcategory].[rulename]")
                         .hasArg()
-                        .withArgName("filters")
+                        .withValueSeparator(',')
+                        .withArgName("filter-list")
                         .create("f")
         );
 
@@ -115,6 +121,7 @@ public class LogSort {
     }
 
     public static void main(String[] args) throws Exception {
+
 
         cliOptions = createCommandLineOptions();
 
@@ -156,15 +163,19 @@ public class LogSort {
                     configFileName = cli.getOptionValue("config");
                 }
                 configFile = new File(configFileName);
-                if (!configFile.isFile() || !configFile.canRead()) {
-                    failWithCliParamError("Config file " + configFileName + " doesn't exists or not readable");
-                }
+
                 try {
-                    LogSortConfiguration.loadConfig(configFile);
+                    LogSortConfiguration config = LogSortConfiguration.loadConfig(configFile);
+
+                    if ( cli.hasOption("rule-filters") ){
+                        String[] filters = cli.getOptionValue("rule-filters").split(",");
+                        config.applyFilters(filters);
+                    }
                 } catch (FileNotFoundException e) {
                     failWithCliParamError("Config file " + configFileName + " doesn't exists or not readable");
                 } catch (JsonSyntaxException e) {
-                    //TODO: Fail here
+                    log.error("Syntax error in the JSON file " + configFile + ": " + e);
+                    System.exit(102);
                 }
             }
         } catch (Exception e) {
