@@ -1,6 +1,8 @@
 package com.prezi.dataservice;
 
 import com.google.gson.JsonSyntaxException;
+import com.prezi.dataservice.logsort.config.ExecutionConfiguration;
+import com.prezi.dataservice.logsort.config.ExecutionMode;
 import com.prezi.dataservice.logsort.config.LogSortConfiguration;
 import org.apache.commons.cli.*;
 import org.apache.commons.logging.Log;
@@ -21,6 +23,7 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.security.InvalidParameterException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -28,7 +31,6 @@ import java.util.Locale;
 
 public class LogSort {
     private static Log log = LogFactory.getLog(LogSort.class);
-    private static LogSortConfiguration logSortConfiguration;
 
     public static class Map extends Mapper<LongWritable, Text, NullWritable, Text> {
         private Text word = new Text();
@@ -60,128 +62,15 @@ public class LogSort {
         }
     }
 
-    private static Options createCommandLineOptions() {
-        Options options = new Options();
-
-        options.addOption("r", "run", false, "Run logsort on hadoop");
-        options.addOption("l", "local-test", false, "Run logsort locally");
-
-        options.addOption(
-                OptionBuilder
-                        .withLongOpt("start-date")
-                        .withDescription("The date to run logsort from (YYYY-MM-DD)")
-                        .hasArg()
-                        .withArgName("date")
-                        .create("s")
-        );
-
-        options.addOption(
-                OptionBuilder
-                        .withLongOpt("end-date")
-                        .withDescription("The date to run logsort until (YYYY-MM-DD)")
-                        .hasArg()
-                        .withArgName("date")
-                        .create("e")
-        );
-
-        options.addOption(
-                OptionBuilder
-                        .withLongOpt("config")
-                        .withDescription("path to the config.json file")
-                        .hasArg()
-                        .withArgName("file")
-                        .create("c")
-        );
-
-        options.addOption(
-                OptionBuilder
-                        .withLongOpt("rule-filters")
-                        .withDescription("Comma separated list of the rules to be executed, in the form of [logcategory].[rulename]")
-                        .hasArg()
-                        .withValueSeparator(',')
-                        .withArgName("filter-list")
-                        .create("f")
-        );
-
-        return options;
-    }
-
-    private static void printCommandLineHelp(final Options options) {
-        HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("java -jar logsort.jar [OPTION]", options);
-    }
-
-    private static Options cliOptions;
-
-    private static void failWithCliParamError(final String error) {
-        printCommandLineHelp(cliOptions);
-        System.err.println("ERROR: " + (error));
-        System.exit(101);
-
-    }
-
     public static void main(String[] args) throws Exception {
 
+        ExecutionConfiguration execConfig = ExecutionConfiguration.setupFromCLArgs(args);
 
-        cliOptions = createCommandLineOptions();
-
-        CommandLineParser parser = new BasicParser();
-
-        try {
-            CommandLine cli = parser.parse(cliOptions, args);
-
-            if (!cli.hasOption("run") && !cli.hasOption("local-test"))
-                failWithCliParamError("Please choose from --run or --local execution modes");
-
-            if (cli.hasOption("run")) {
-                if (!cli.hasOption("start-date")) failWithCliParamError("Please specify a start-date");
-                if (!cli.hasOption("end-date")) failWithCliParamError("Please specify an end-date");
-
-                String startDateStr = cli.getOptionValue("start-date");
-                String endDateStr = cli.getOptionValue("end-date");
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
-
-                Date startDate;
-                Date endDate;
-
-                try {
-                    startDate = dateFormat.parse(startDateStr);
-                } catch (java.text.ParseException e) {
-                    failWithCliParamError("Invalid date for start date.\n" + endDateStr.toString());
-                }
-
-                try {
-                    endDate = dateFormat.parse(endDateStr);
-                } catch (java.text.ParseException e) {
-                    failWithCliParamError("Invalid date for end date.\n" + endDateStr.toString());
-                }
-
-                String configFileName = "config.json";
-                File configFile;
-
-                if (cli.hasOption("config")) {
-                    configFileName = cli.getOptionValue("config");
-                }
-                configFile = new File(configFileName);
-
-                try {
-                    LogSortConfiguration config = LogSortConfiguration.loadConfig(configFile);
-
-                    if ( cli.hasOption("rule-filters") ){
-                        String[] filters = cli.getOptionValue("rule-filters").split(",");
-                        config.applyFilters(filters);
-                    }
-                } catch (FileNotFoundException e) {
-                    failWithCliParamError("Config file " + configFileName + " doesn't exists or not readable");
-                } catch (JsonSyntaxException e) {
-                    log.error("Syntax error in the JSON file " + configFile + ": " + e);
-                    System.exit(102);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(101);
+        Executor executor = new Executor();
+        if ( execConfig.getExecutionMode() == ExecutionMode.LOCAL){
+            executor = new LocalExecutor(execConfig);
         }
+        executor.execute();
 
         System.exit(0);
 
