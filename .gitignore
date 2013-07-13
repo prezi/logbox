@@ -1,5 +1,7 @@
 *.class
 
+target/
+
 # IntelliJ IDEA files
 .idea/
 logsort.iml
