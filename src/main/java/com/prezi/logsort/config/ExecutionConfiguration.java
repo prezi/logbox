@@ -1,4 +1,4 @@
-package com.prezi.dataservice.logsort.config;
+package com.prezi.logsort.config;
 
 import com.google.gson.JsonSyntaxException;
 import org.apache.commons.cli.*;

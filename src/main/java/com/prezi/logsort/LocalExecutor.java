@@ -1,6 +1,6 @@
-package com.prezi.dataservice;
+package com.prezi.logsort;
 
-import com.prezi.dataservice.logsort.config.ExecutionConfiguration;
+import com.prezi.logsort.config.ExecutionConfiguration;
 
 public class LocalExecutor extends Executor {
     public LocalExecutor(ExecutionConfiguration c){

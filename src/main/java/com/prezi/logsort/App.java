@@ -1,10 +1,7 @@
-package com.prezi.dataservice;
+package com.prezi.logsort;
 
-import com.google.gson.JsonSyntaxException;
-import com.prezi.dataservice.logsort.config.ExecutionConfiguration;
-import com.prezi.dataservice.logsort.config.ExecutionMode;
-import com.prezi.dataservice.logsort.config.LogSortConfiguration;
-import org.apache.commons.cli.*;
+import com.prezi.logsort.config.ExecutionConfiguration;
+import com.prezi.logsort.config.ExecutionMode;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -20,17 +17,11 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.security.InvalidParameterException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 
 
-public class LogSort {
-    private static Log log = LogFactory.getLog(LogSort.class);
+public class App {
+    private static Log log = LogFactory.getLog(App.class);
 
     public static class Map extends Mapper<LongWritable, Text, NullWritable, Text> {
         private Text word = new Text();

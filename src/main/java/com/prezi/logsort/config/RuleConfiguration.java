@@ -1,4 +1,4 @@
-package com.prezi.dataservice.logsort.config;
+package com.prezi.logsort.config;
 
 import java.util.ArrayList;
 

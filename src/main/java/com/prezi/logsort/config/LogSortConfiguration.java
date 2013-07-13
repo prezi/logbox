@@ -1,4 +1,4 @@
-package com.prezi.dataservice.logsort.config;
+package com.prezi.logsort.config;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
@@ -28,6 +28,14 @@ public class LogSortConfiguration {
         }
         Gson gson = new Gson();
         return gson.fromJson(new FileReader(configFile), LogSortConfiguration.class);
+    }
+
+    public void compileRules(){
+        for (RuleConfiguration category : ruleConfigurations ){
+            for (Rule rule : category.getRules()){
+
+            }
+        }
     }
 
     public void applyFilters(String[] filters)

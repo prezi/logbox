@@ -1,10 +1,18 @@
-package com.prezi.dataservice.logsort.config;
+package com.prezi.logsort.config;
 
 import com.google.gson.annotations.SerializedName;
 
 public class Rule {
     private String name;
     private String description;
+
+    private String match;
+
+    public String getMatchRegex() {
+        return matchRegex;
+    }
+
+    private String matchRegex;
 
     @SerializedName("output_format")
     private String outputFormat;
@@ -33,5 +41,25 @@ public class Rule {
 
     public String getStartedAt() {
         return startedAt;
+    }
+
+    public String getMatch() {
+        return match;
+    }
+
+    public void compile(){
+
+    }
+
+    public boolean matches(String line){
+          return true;
+    }
+
+    public String getSubstitutedLine(){
+        return "";
+    }
+
+    public String getOutputLocation(){
+        return "";
     }
 }

@@ -1,8 +1,6 @@
-package com.prezi.dataservice;
+package com.prezi.logsort;
 
-import com.prezi.dataservice.logsort.config.ExecutionConfiguration;
-
-import java.util.MissingResourceException;
+import com.prezi.logsort.config.ExecutionConfiguration;
 
 public class Executor {
 
