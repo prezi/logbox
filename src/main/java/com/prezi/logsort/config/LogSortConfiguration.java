@@ -16,8 +16,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class LogSortConfiguration {
-    @SerializedName("rule_config")
-    private ArrayList<RuleConfiguration> ruleConfigurations;
+    @SerializedName("categories")
+    private ArrayList<CategoryConfiguration> categoryConfigurations;
 
     private Log log = LogFactory.getLog(LogSortConfiguration.class);
 
@@ -30,9 +30,9 @@ public class LogSortConfiguration {
         return gson.fromJson(new FileReader(configFile), LogSortConfiguration.class);
     }
 
-    public void compileRules(){
-        for (RuleConfiguration category : ruleConfigurations ){
-            for (Rule rule : category.getRules()){
+    public void compileRules() {
+        for (CategoryConfiguration category : categoryConfigurations) {
+            for (Rule rule : category.getRules()) {
 
             }
         }
@@ -53,8 +53,8 @@ public class LogSortConfiguration {
         // Look for category-filters that reference non-existing categories
         for (String category : filterCategories) {
             boolean categoryFoundInFilters = false;
-            for (int i = 0; i < ruleConfigurations.size(); i++) {
-                if (ruleConfigurations.get(i).getCategory().equals(category)) {
+            for (int i = 0; i < categoryConfigurations.size(); i++) {
+                if (categoryConfigurations.get(i).getName().equals(category)) {
                     categoryFoundInFilters = true;
                     break;
                 }
@@ -72,18 +72,18 @@ public class LogSortConfiguration {
             }
 
             boolean ruleFound = false;
-            for (RuleConfiguration category : ruleConfigurations) {
+            for (CategoryConfiguration category : categoryConfigurations) {
                 if (ruleFound) {
                     break;
                 }
 
                 String filterCategory = ruleFilter.split("\\.")[0];
-                if (!category.getCategory().equals(filterCategory)) {
+                if (!category.getName().equals(filterCategory)) {
                     continue;
                 }
 
                 for (Rule rule : category.getRules()) {
-                    String canonicalRuleName = category.getCategory() + "." + rule.getName();
+                    String canonicalRuleName = category.getName() + "." + rule.getName();
                     if (ruleFilter.equals(canonicalRuleName)) {
                         ruleFound = true;
                         break;
@@ -118,37 +118,37 @@ public class LogSortConfiguration {
 
         // -- Eliminate unnecessary rules from the configuration
 
-        ArrayList<RuleConfiguration> filteredConfiguration = new ArrayList<RuleConfiguration>();
-        for (RuleConfiguration ruleCategories : ruleConfigurations) {
+        ArrayList<CategoryConfiguration> filteredConfiguration = new ArrayList<CategoryConfiguration>();
+        for (CategoryConfiguration ruleCategories : categoryConfigurations) {
 
             // if the current category isn't mentioned in the filters, we don't care
-            if (filterCategories.contains(ruleCategories.getCategory())) {
+            if (filterCategories.contains(ruleCategories.getName())) {
 
                 // if there is a category filter, put the corresponding ruleset into the new config
-                if (categoryFilters.contains(ruleCategories.getCategory())) {
+                if (categoryFilters.contains(ruleCategories.getName())) {
                     filteredConfiguration.add(ruleCategories);
                 } else {
                     // Check and add individual rule filters, if necessary
-                    RuleConfiguration newRuleConfiguration = new RuleConfiguration(ruleCategories.getCategory());
+                    CategoryConfiguration newCategoryConfiguration = new CategoryConfiguration(ruleCategories.getName());
 
                     for (Rule rule : ruleCategories.getRules()) {
-                        String canonicalRuleName = ruleCategories.getCategory() + "." + rule.getName();
+                        String canonicalRuleName = ruleCategories.getName() + "." + rule.getName();
                         if (filterSet.contains(canonicalRuleName)) {
-                            newRuleConfiguration.getRules().add(rule);
+                            newCategoryConfiguration.getRules().add(rule);
                         }
                     }
 
-                    if (newRuleConfiguration.getRules().size() > 0) {
-                        filteredConfiguration.add(newRuleConfiguration);
+                    if (newCategoryConfiguration.getRules().size() > 0) {
+                        filteredConfiguration.add(newCategoryConfiguration);
                     }
                 }
             }
         }
-        ruleConfigurations = filteredConfiguration;
+        categoryConfigurations = filteredConfiguration;
 
-        for ( RuleConfiguration category : ruleConfigurations){
-            for (Rule rule : category.getRules() ){
-                log.info("Added rule " + category.getCategory() + " -> " + rule.getName());
+        for (CategoryConfiguration category : categoryConfigurations) {
+            for (Rule rule : category.getRules()) {
+                log.info("Added rule " + category.getName() + " -> " + rule.getName());
             }
         }
     }

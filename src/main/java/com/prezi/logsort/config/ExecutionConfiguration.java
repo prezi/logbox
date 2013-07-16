@@ -21,13 +21,33 @@ public class ExecutionConfiguration {
     private LogSortConfiguration ruleConfig;
     private Date startDate;
     private Date endDate;
-    private String localTestInputFile;
+    private File localTestInputFile;
+    private File localOutputDirectory;
 
-    public String getLocalTestInputFile() {
+    public File getLocalOutputDirectory() {
+        return localOutputDirectory;
+    }
+
+    public void setLocalOutputDirectory(File localOutputDirectory) {
+        this.localOutputDirectory = localOutputDirectory;
+    }
+
+    private boolean cleanUpOutputDir = false;
+
+    public void setCleanUpOutputDir(boolean cleanUpOutputDir) {
+        this.cleanUpOutputDir = cleanUpOutputDir;
+    }
+
+
+    public boolean isCleanUpOutputDir() {
+        return cleanUpOutputDir;
+    }
+
+    public File getLocalTestInputFile() {
         return localTestInputFile;
     }
 
-    public void setLocalTestInputFile(String localTestInputFile) {
+    public void setLocalTestInputFile(File localTestInputFile) {
         this.localTestInputFile = localTestInputFile;
     }
 
@@ -92,6 +112,7 @@ public class ExecutionConfiguration {
 
         options.addOption("r", "run", false, "Run logsort on hadoop");
         options.addOption("l", "local-test", false, "Run logsort locally");
+        options.addOption("c", "cleanup", false, "Remove output dir before running");
 
         options.addOption(
                 OptionBuilder
@@ -135,7 +156,7 @@ public class ExecutionConfiguration {
                         .withDescription("log category to test the rules from in local-test-mode")
                         .hasArg()
                         .withArgName("category")
-                        .create("c")
+                        .create("tc")
         );
 
         options.addOption(
@@ -146,6 +167,15 @@ public class ExecutionConfiguration {
                         .withValueSeparator(',')
                         .withArgName("filter-list")
                         .create("f")
+        );
+
+        options.addOption(
+                OptionBuilder
+                        .withLongOpt("local-output-dir")
+                        .withDescription("Output directory for local test")
+                        .hasArg()
+                        .withArgName("directory")
+                        .create("d")
         );
 
         return options;
@@ -197,19 +227,26 @@ public class ExecutionConfiguration {
                     failWithCliParamError("Running in local mode: Please specify an input file");
                 }
 
-                execConfig.setLocalTestInputFile(cli.getOptionValue("input-file"));
-
-                if (!new File(execConfig.getLocalTestInputFile()).isFile()) {
-                    log.error("Cannot read input file " + execConfig.getLocalTestInputFile());
-                    System.exit(104);
+                File localInputFile = new File(cli.getOptionValue("input-file"));
+                if (!localInputFile.canRead()) {
+                    failWithCliParamError("Local input file " + cli.getOptionValue("input-file") + " doesn't exists of not readable");
                 }
 
+                execConfig.setLocalTestInputFile(localInputFile);
 
                 if (!cli.hasOption("test-category")) {
                     failWithCliParamError("Running in local mode: Please specify a test category");
                 }
 
                 execConfig.setLocalTestCategory(cli.getOptionValue("test-category"));
+
+                if (!cli.hasOption("local-output-dir")) {
+                    failWithCliParamError("Running in local mode: Please specify an output directory");
+                }
+
+                File localOutputDirectory = new File(cli.getOptionValue("local-output-dir"));
+                execConfig.setLocalOutputDirectory(localOutputDirectory);
+
             }
 
             String configFileName = "config.json";
@@ -222,7 +259,7 @@ public class ExecutionConfiguration {
 
             try {
                 execConfig.setRuleConfig(LogSortConfiguration.loadConfig(configFile));
-                if ( execConfig.getExecutionMode() == ExecutionMode.LOCAL){
+                if (execConfig.getExecutionMode() == ExecutionMode.LOCAL) {
                     execConfig.getRuleConfig().applyFilters(new String[]{execConfig.getLocalTestCategory()});
                 }
 
@@ -236,6 +273,11 @@ public class ExecutionConfiguration {
                 log.error("Syntax error in the JSON file " + configFile + ": " + e);
                 System.exit(102);
             }
+
+            if (cli.hasOption("cleanup")) {
+                execConfig.setCleanUpOutputDir(true);
+            }
+
         } catch (InvalidParameterException e) {
             log.error(e.getMessage());
             System.exit(103);
@@ -243,6 +285,6 @@ public class ExecutionConfiguration {
             failWithCliParamError("Cannot parse parameters: " + e.getMessage());
         }
 
-        return null;
+        return execConfig;
     }
 }
