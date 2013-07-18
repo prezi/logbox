@@ -1,27 +1,26 @@
 package com.prezi.logsort.config;
 
+import com.google.code.regexp.Pattern;
 import com.google.gson.annotations.SerializedName;
+
+import java.util.regex.PatternSyntaxException;
 
 public class Rule {
     private String name;
     private String description;
-
-    private String match;
-
-    public String getMatchRegex() {
-        return matchRegex;
-    }
-
-    private String matchRegex;
-
+    @SerializedName("match")
+    private String regexStr;
     @SerializedName("output_format")
     private String outputFormat;
-
     @SerializedName("output_config")
     private String outputConfig;
-
     @SerializedName("started_at")
     private String startedAt;
+    private Pattern regexPattern;
+
+    public Pattern getMatcherPattern() {
+        return regexPattern;
+    }
 
     public String getName() {
         return name;
@@ -43,23 +42,23 @@ public class Rule {
         return startedAt;
     }
 
-    public String getMatch() {
-        return match;
+    public String getRegexStr() {
+        return regexStr;
     }
 
-    public void compile(){
-
+    public void compile() throws PatternSyntaxException {
+        regexPattern = Pattern.compile(regexStr);
     }
 
-    public boolean matches(String line){
-          return true;
+    public boolean matches(String line) {
+        return regexPattern.matcher(line).find();
     }
 
-    public String getSubstitutedLine(){
-        return "";
+    public String getSubstitutedLine(String line) {
+        return regexPattern.matcher(line).replaceAll(outputFormat);
     }
 
-    public String getOutputLocation(){
+    public String getOutputLocation() {
         return "";
     }
 }

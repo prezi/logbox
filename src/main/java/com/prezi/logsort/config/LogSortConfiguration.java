@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.PatternSyntaxException;
 
 public class LogSortConfiguration {
     @SerializedName("categories")
@@ -22,18 +23,31 @@ public class LogSortConfiguration {
     private Log log = LogFactory.getLog(LogSortConfiguration.class);
 
     public static LogSortConfiguration loadConfig(File configFile)
-            throws FileNotFoundException, JsonSyntaxException {
+            throws FileNotFoundException, JsonSyntaxException, PatternSyntaxException  {
         if (!configFile.isFile() || !configFile.canRead()) {
-            throw new FileNotFoundException("Config file " + configFile.getAbsoluteFile().toString() + " doesn't exists or not readable");
+            throw new FileNotFoundException(
+                    "Config file " + configFile.getAbsoluteFile().toString() + " doesn't exists or not readable"
+            );
         }
         Gson gson = new Gson();
-        return gson.fromJson(new FileReader(configFile), LogSortConfiguration.class);
+        LogSortConfiguration conf = gson.fromJson(new FileReader(configFile), LogSortConfiguration.class);
+        conf.compileRules();
+        return conf;
     }
 
-    public void compileRules() {
+    public void compileRules() throws PatternSyntaxException {
         for (CategoryConfiguration category : categoryConfigurations) {
             for (Rule rule : category.getRules()) {
-
+                try {
+                    rule.compile();
+                }
+                catch (PatternSyntaxException e){
+                    throw new PatternSyntaxException(
+                            "Invalid regex pattern in rule " + rule.getName() + ": " + e.getDescription(),
+                            e.getPattern(),
+                            e.getIndex()
+                    );
+                }
             }
         }
     }
@@ -151,5 +165,14 @@ public class LogSortConfiguration {
                 log.info("Added rule " + category.getName() + " -> " + rule.getName());
             }
         }
+    }
+
+    public CategoryConfiguration getCategoryConfigByName(String name){
+        for (CategoryConfiguration conf : categoryConfigurations){
+            if (conf.getName().equals(name)){
+                return conf;
+            }
+        }
+        return null;
     }
 }

@@ -28,4 +28,5 @@ public class CategoryConfiguration {
     public String getName() {
         return name;
     }
+
 }
