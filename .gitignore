@@ -4,5 +4,5 @@ target/
 
 # IntelliJ IDEA files
 .idea/
-logsort.iml
+logbox.iml
 

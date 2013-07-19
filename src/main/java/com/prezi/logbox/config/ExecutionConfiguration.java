@@ -23,6 +23,7 @@ public class ExecutionConfiguration {
     private Date endDate;
     private File localTestInputFile;
     private File localOutputDirectory;
+    private String dateGlob;
 
     public File getLocalOutputDirectory() {
         return localOutputDirectory;
@@ -219,6 +220,8 @@ public class ExecutionConfiguration {
                 } catch (java.text.ParseException e) {
                     failWithCliParamError("Invalid date for end date.\n" + endDateStr.toString());
                 }
+
+                execConfig.calculateDateGlob();
             } else {
                 execConfig.setExecutionMode(com.prezi.logbox.config.ExecutionMode.LOCAL);
 
@@ -246,7 +249,6 @@ public class ExecutionConfiguration {
 
                 File localOutputDirectory = new File(cli.getOptionValue("local-output-dir"));
                 execConfig.setLocalOutputDirectory(localOutputDirectory);
-
             }
 
             String configFileName = "config.json";
@@ -286,5 +288,18 @@ public class ExecutionConfiguration {
         }
 
         return execConfig;
+    }
+
+    public void calculateDateGlob(){
+        //TODO: Calculate date glob
+        this.dateGlob = "{TODO-dateglob}";
+    }
+
+    public void setDateGlob(String dateGlob) {
+        this.dateGlob = dateGlob;
+    }
+
+    public String getDateGlob() {
+        return dateGlob;
     }
 }

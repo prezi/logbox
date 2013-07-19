@@ -9,14 +9,12 @@ import org.apache.commons.logging.LogFactory;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.Serializable;
 import java.security.InvalidParameterException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.PatternSyntaxException;
 
-public class LogBoxConfiguration {
+public class LogBoxConfiguration implements Serializable {
     @SerializedName("categories")
     private ArrayList<CategoryConfiguration> categoryConfigurations;
 
