@@ -1,7 +1,5 @@
-package com.prezi.logsort;
+package com.prezi.logbox;
 
-import com.prezi.logsort.config.ExecutionConfiguration;
-import com.prezi.logsort.config.ExecutionMode;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -42,7 +40,7 @@ public class App {
         Configuration conf = new Configuration();
         conf.setStrings("config.json","hello_config");
 
-        Job job = new Job(conf, "logsort");
+        Job job = new Job(conf, "logbox");
 
         job.setOutputKeyClass(NullWritable.class);
         job.setOutputValueClass(Text.class);
@@ -53,7 +51,7 @@ public class App {
         job.setOutputFormatClass(TextOutputFormat.class);
 
         FileInputFormat.addInputPath(job, new Path("/Users/zoltanctoth/system.gems"));
-        FileOutputFormat.setOutputPath(job, new Path("/Users/zoltanctoth/src/logsort/hadoop.sample.out"));
+        FileOutputFormat.setOutputPath(job, new Path("/Users/zoltanctoth/src/logbox/hadoop.sample.out"));
 
         job.waitForCompletion(true);
     }

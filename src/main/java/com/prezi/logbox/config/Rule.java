@@ -1,4 +1,4 @@
-package com.prezi.logsort.config;
+package com.prezi.logbox.config;
 
 import com.google.code.regexp.Pattern;
 import com.google.gson.annotations.SerializedName;

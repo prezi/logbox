@@ -1,4 +1,4 @@
-package com.prezi.logsort;
+package com.prezi.logbox;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

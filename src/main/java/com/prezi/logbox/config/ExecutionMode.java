@@ -1,4 +1,4 @@
-package com.prezi.logsort.config;
+package com.prezi.logbox.config;
 
 public enum ExecutionMode {
     LOCAL,

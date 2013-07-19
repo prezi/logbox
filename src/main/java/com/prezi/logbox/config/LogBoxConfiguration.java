@@ -1,4 +1,4 @@
-package com.prezi.logsort.config;
+package com.prezi.logbox.config;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
@@ -16,13 +16,13 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.PatternSyntaxException;
 
-public class LogSortConfiguration {
+public class LogBoxConfiguration {
     @SerializedName("categories")
     private ArrayList<CategoryConfiguration> categoryConfigurations;
 
-    private Log log = LogFactory.getLog(LogSortConfiguration.class);
+    private Log log = LogFactory.getLog(LogBoxConfiguration.class);
 
-    public static LogSortConfiguration loadConfig(File configFile)
+    public static LogBoxConfiguration loadConfig(File configFile)
             throws FileNotFoundException, JsonSyntaxException, PatternSyntaxException  {
         if (!configFile.isFile() || !configFile.canRead()) {
             throw new FileNotFoundException(
@@ -30,7 +30,7 @@ public class LogSortConfiguration {
             );
         }
         Gson gson = new Gson();
-        LogSortConfiguration conf = gson.fromJson(new FileReader(configFile), LogSortConfiguration.class);
+        LogBoxConfiguration conf = gson.fromJson(new FileReader(configFile), LogBoxConfiguration.class);
         conf.compileRules();
         return conf;
     }

@@ -1,10 +1,8 @@
-package com.prezi.logsort;
-
-import com.prezi.logsort.config.ExecutionConfiguration;
+package com.prezi.logbox;
 
 public class Executor {
 
-    protected ExecutionConfiguration execConfig;
+    protected com.prezi.logbox.config.ExecutionConfiguration execConfig;
 
     public void execute()
     throws Exception {

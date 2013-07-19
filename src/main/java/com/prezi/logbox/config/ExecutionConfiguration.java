@@ -1,4 +1,4 @@
-package com.prezi.logsort.config;
+package com.prezi.logbox.config;
 
 import com.google.gson.JsonSyntaxException;
 import org.apache.commons.cli.*;
@@ -17,8 +17,8 @@ public class ExecutionConfiguration {
     private static Log log = LogFactory.getLog(ExecutionConfiguration.class);
     private static Options cliOptions;
 
-    private ExecutionMode executionMode;
-    private LogSortConfiguration ruleConfig;
+    private com.prezi.logbox.config.ExecutionMode executionMode;
+    private LogBoxConfiguration ruleConfig;
     private Date startDate;
     private Date endDate;
     private File localTestInputFile;
@@ -62,11 +62,11 @@ public class ExecutionConfiguration {
     private String localTestCategory;
 
 
-    public ExecutionMode getExecutionMode() {
+    public com.prezi.logbox.config.ExecutionMode getExecutionMode() {
         return executionMode;
     }
 
-    public void setExecutionMode(ExecutionMode executionMode) {
+    public void setExecutionMode(com.prezi.logbox.config.ExecutionMode executionMode) {
         this.executionMode = executionMode;
     }
 
@@ -87,17 +87,17 @@ public class ExecutionConfiguration {
         this.endDate = endDate;
     }
 
-    public LogSortConfiguration getRuleConfig() {
+    public LogBoxConfiguration getRuleConfig() {
         return ruleConfig;
     }
 
-    public void setRuleConfig(LogSortConfiguration ruleConfig) {
+    public void setRuleConfig(LogBoxConfiguration ruleConfig) {
         this.ruleConfig = ruleConfig;
     }
 
     private static void printCommandLineHelp(final Options options) {
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("java -jar logsort.jar [OPTION]", options);
+        formatter.printHelp("java -jar logbox.jar [OPTION]", options);
     }
 
     private static void failWithCliParamError(final String error) {
@@ -110,14 +110,14 @@ public class ExecutionConfiguration {
     private static Options createCommandLineOptions() {
         Options options = new Options();
 
-        options.addOption("r", "run", false, "Run logsort on hadoop");
-        options.addOption("l", "local-test", false, "Run logsort locally");
+        options.addOption("r", "run", false, "Run logbox on hadoop");
+        options.addOption("l", "local-test", false, "Run logbox locally");
         options.addOption("c", "cleanup", false, "Remove output dir before running");
 
         options.addOption(
                 OptionBuilder
                         .withLongOpt("start-date")
-                        .withDescription("The date to run logsort from (YYYY-MM-DD)")
+                        .withDescription("The date to run logbox from (YYYY-MM-DD)")
                         .hasArg()
                         .withArgName("date")
                         .create("s")
@@ -126,7 +126,7 @@ public class ExecutionConfiguration {
         options.addOption(
                 OptionBuilder
                         .withLongOpt("end-date")
-                        .withDescription("The date to run logsort until (YYYY-MM-DD)")
+                        .withDescription("The date to run logbox until (YYYY-MM-DD)")
                         .hasArg()
                         .withArgName("date")
                         .create("e")
@@ -200,7 +200,7 @@ public class ExecutionConfiguration {
                 failWithCliParamError("Please choose only one from --run or --local execution modes");
 
             if (cli.hasOption("run")) {
-                execConfig.setExecutionMode(ExecutionMode.HADOOP);
+                execConfig.setExecutionMode(com.prezi.logbox.config.ExecutionMode.HADOOP);
                 if (!cli.hasOption("start-date")) failWithCliParamError("Please specify a start-date");
                 if (!cli.hasOption("end-date")) failWithCliParamError("Please specify an end-date");
 
@@ -220,7 +220,7 @@ public class ExecutionConfiguration {
                     failWithCliParamError("Invalid date for end date.\n" + endDateStr.toString());
                 }
             } else {
-                execConfig.setExecutionMode(ExecutionMode.LOCAL);
+                execConfig.setExecutionMode(com.prezi.logbox.config.ExecutionMode.LOCAL);
 
 
                 if (!cli.hasOption("input-file")) {
@@ -258,8 +258,8 @@ public class ExecutionConfiguration {
             configFile = new File(configFileName);
 
             try {
-                execConfig.setRuleConfig(LogSortConfiguration.loadConfig(configFile));
-                if (execConfig.getExecutionMode() == ExecutionMode.LOCAL) {
+                execConfig.setRuleConfig(LogBoxConfiguration.loadConfig(configFile));
+                if (execConfig.getExecutionMode() == com.prezi.logbox.config.ExecutionMode.LOCAL) {
                     execConfig.getRuleConfig().applyFilters(new String[]{execConfig.getLocalTestCategory()});
                 }
 
