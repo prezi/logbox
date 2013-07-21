@@ -1,8 +1,10 @@
 package com.prezi.logbox;
 
+import com.prezi.logbox.config.ExecutionContext;
+
 public class Executor {
 
-    protected com.prezi.logbox.config.ExecutionConfiguration execConfig;
+    protected ExecutionContext context;
 
     public void execute()
     throws Exception {

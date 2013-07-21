@@ -12,9 +12,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class ExecutionConfiguration {
+public class ExecutionContext {
 
-    private static Log log = LogFactory.getLog(ExecutionConfiguration.class);
+    private static Log log = LogFactory.getLog(ExecutionContext.class);
     private static Options cliOptions;
 
     private com.prezi.logbox.config.ExecutionMode executionMode;
@@ -111,8 +111,8 @@ public class ExecutionConfiguration {
     private static Options createCommandLineOptions() {
         Options options = new Options();
 
-        options.addOption("r", "run", false, "Run logbox on hadoop");
-        options.addOption("l", "local-test", false, "Run logbox locally");
+        options.addOption("rd", "run", false, "Run logbox on hadoop");
+        options.addOption("rt", "local-test", false, "Test logbox locally");
         options.addOption("c", "cleanup", false, "Remove output dir before running");
 
         options.addOption(
@@ -144,8 +144,8 @@ public class ExecutionConfiguration {
 
         options.addOption(
                 OptionBuilder
-                        .withLongOpt("input-file")
-                        .withDescription("path to the input file in local-test mode")
+                        .withLongOpt("input-location")
+                        .withDescription("path to the input file in local modes")
                         .hasArg()
                         .withArgName("file")
                         .create("i")
@@ -182,9 +182,9 @@ public class ExecutionConfiguration {
         return options;
     }
 
-    public static ExecutionConfiguration setupFromCLArgs(String[] args) {
+    public static ExecutionContext setupFromCLArgs(String[] args) {
 
-        ExecutionConfiguration execConfig = new ExecutionConfiguration();
+        ExecutionContext context = new ExecutionContext();
 
         cliOptions = createCommandLineOptions();
 
@@ -201,7 +201,7 @@ public class ExecutionConfiguration {
                 failWithCliParamError("Please choose only one from --run or --local execution modes");
 
             if (cli.hasOption("run")) {
-                execConfig.setExecutionMode(com.prezi.logbox.config.ExecutionMode.HADOOP);
+                context.setExecutionMode(com.prezi.logbox.config.ExecutionMode.HADOOP);
                 if (!cli.hasOption("start-date")) failWithCliParamError("Please specify a start-date");
                 if (!cli.hasOption("end-date")) failWithCliParamError("Please specify an end-date");
 
@@ -210,45 +210,45 @@ public class ExecutionConfiguration {
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
 
                 try {
-                    execConfig.setStartDate(dateFormat.parse(startDateStr));
+                    context.setStartDate(dateFormat.parse(startDateStr));
                 } catch (java.text.ParseException e) {
                     failWithCliParamError("Invalid date for start date.\n" + endDateStr.toString());
                 }
 
                 try {
-                    execConfig.setEndDate(dateFormat.parse(endDateStr));
+                    context.setEndDate(dateFormat.parse(endDateStr));
                 } catch (java.text.ParseException e) {
                     failWithCliParamError("Invalid date for end date.\n" + endDateStr.toString());
                 }
 
-                execConfig.calculateDateGlob();
+                context.calculateDateGlob();
             } else {
-                execConfig.setExecutionMode(com.prezi.logbox.config.ExecutionMode.LOCAL);
+                context.setExecutionMode(com.prezi.logbox.config.ExecutionMode.LOCAL_TEST);
 
 
-                if (!cli.hasOption("input-file")) {
+                if (!cli.hasOption("input-location")) {
                     failWithCliParamError("Running in local mode: Please specify an input file");
                 }
 
-                File localInputFile = new File(cli.getOptionValue("input-file"));
+                File localInputFile = new File(cli.getOptionValue("input-location"));
                 if (!localInputFile.canRead()) {
-                    failWithCliParamError("Local input file " + cli.getOptionValue("input-file") + " doesn't exists of not readable");
+                    failWithCliParamError("Local input file " + cli.getOptionValue("input-location") + " doesn't exists of not readable");
                 }
 
-                execConfig.setLocalTestInputFile(localInputFile);
+                context.setLocalTestInputFile(localInputFile);
 
                 if (!cli.hasOption("test-category")) {
                     failWithCliParamError("Running in local mode: Please specify a test category");
                 }
 
-                execConfig.setLocalTestCategory(cli.getOptionValue("test-category"));
+                context.setLocalTestCategory(cli.getOptionValue("test-category"));
 
                 if (!cli.hasOption("local-output-dir")) {
                     failWithCliParamError("Running in local mode: Please specify an output directory");
                 }
 
                 File localOutputDirectory = new File(cli.getOptionValue("local-output-dir"));
-                execConfig.setLocalOutputDirectory(localOutputDirectory);
+                context.setLocalOutputDirectory(localOutputDirectory);
             }
 
             String configFileName = "config.json";
@@ -260,14 +260,14 @@ public class ExecutionConfiguration {
             configFile = new File(configFileName);
 
             try {
-                execConfig.setRuleConfig(LogBoxConfiguration.loadConfig(configFile));
-                if (execConfig.getExecutionMode() == com.prezi.logbox.config.ExecutionMode.LOCAL) {
-                    execConfig.getRuleConfig().applyFilters(new String[]{execConfig.getLocalTestCategory()});
+                context.setRuleConfig(LogBoxConfiguration.loadConfig(configFile));
+                if (context.getExecutionMode() == com.prezi.logbox.config.ExecutionMode.LOCAL_TEST) {
+                    context.getRuleConfig().applyFilters(new String[]{context.getLocalTestCategory()});
                 }
 
                 if (cli.hasOption("rule-filters")) {
                     String[] filters = cli.getOptionValue("rule-filters").split(",");
-                    execConfig.getRuleConfig().applyFilters(filters);
+                    context.getRuleConfig().applyFilters(filters);
                 }
             } catch (FileNotFoundException e) {
                 failWithCliParamError("Config file " + configFileName + " doesn't exists or not readable");
@@ -277,7 +277,7 @@ public class ExecutionConfiguration {
             }
 
             if (cli.hasOption("cleanup")) {
-                execConfig.setCleanUpOutputDir(true);
+                context.setCleanUpOutputDir(true);
             }
 
         } catch (InvalidParameterException e) {
@@ -287,7 +287,7 @@ public class ExecutionConfiguration {
             failWithCliParamError("Cannot parse parameters: " + e.getMessage());
         }
 
-        return execConfig;
+        return context;
     }
 
     public void calculateDateGlob(){

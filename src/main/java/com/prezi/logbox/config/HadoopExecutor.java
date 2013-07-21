@@ -1,5 +1,7 @@
 package com.prezi.logbox.config;
 
+import com.hadoop.compression.lzo.DistributedLzoIndexer;
+import com.hadoop.compression.lzo.LzoCodec;
 import com.prezi.logbox.Executor;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -18,22 +20,34 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import java.io.IOException;
 
 public class HadoopExecutor extends Executor {
-    private ExecutionConfiguration execConfig;
+    private ExecutionContext context;
 
     public static class Map extends Mapper<LongWritable, Text, NullWritable, Text> {
         private Text word = new Text();
         private MultipleOutputs<NullWritable, Text> multipleOutputs;
 
         private String inputPath;
-        private String configJson;
+        private String inputBaseName;
+        private LogBoxConfiguration config;
+
+        public String getBaseName(String location){
+            String[] parts = location.split("/(?=[^/\\.]+(\\.*)$)");
+            if ( config.getInputCompression().equals("lzo") && parts.length == 3 && parts[2].equals("lzo") ){
+                return parts[1] + "." + parts[2];
+            } else{
+                return parts[1];
+            }
+        }
 
         @Override
         protected void setup(Context context)
                 throws IOException, InterruptedException {
             inputPath = ((FileSplit)context.getInputSplit()).getPath().toString();
             multipleOutputs = new MultipleOutputs<NullWritable, Text>(context);
-            configJson = (String)context.getConfiguration().get("config.json");
 
+            String configJSON = (String)context.getConfiguration().get("config.json");
+            config = LogBoxConfiguration.fromConfig(configJSON);
+            inputBaseName = getBaseName(inputPath);
         }
 
         @Override
@@ -43,8 +57,7 @@ public class HadoopExecutor extends Executor {
                 return;
             }
 
-            String path = line.substring(0, 1);
-            multipleOutputs.write(NullWritable.get(), new Text(configJson + " " + line), path + "/part");
+            multipleOutputs.write(NullWritable.get(), new Text(inputBaseName + " " + line), "sample-path/part");
         }
 
         @Override
@@ -54,14 +67,14 @@ public class HadoopExecutor extends Executor {
         }
     }
 
-    public HadoopExecutor(com.prezi.logbox.config.ExecutionConfiguration c) {
-        this.execConfig = c;
+    public HadoopExecutor(ExecutionContext c) {
+        this.context = c;
     }
 
     public void execute() throws IOException {
 
         Configuration conf = new Configuration();
-        conf.setStrings("config.json","hello_config");
+        conf.setStrings("config.json",context.getRuleConfig().toJSON());
 
         Job job = new Job(conf, "logbox");
 
@@ -73,7 +86,16 @@ public class HadoopExecutor extends Executor {
         job.setInputFormatClass(TextInputFormat.class);
         job.setOutputFormatClass(TextOutputFormat.class);
 
-        FileInputFormat.addInputPath(job, new Path("/Users/zoltanctoth/system.gems"));
+        FileInputFormat.addInputPath(job, new Path("/Users/zoltanctoth/src/logbox/input_sample"));
+
+
+        if ( context.getRuleConfig().getOutputCompression() == "lzo"){
+            FileOutputFormat.setCompressOutput(job, true);
+            FileOutputFormat.setOutputCompressorClass(job, LzoCodec.class);
+        }
+
+
+
         FileOutputFormat.setOutputPath(job, new Path("/Users/zoltanctoth/src/logbox/hadoop.sample.out"));
 
         try {

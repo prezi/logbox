@@ -1,5 +1,6 @@
 package com.prezi.logbox;
 
+import com.prezi.logbox.config.ExecutionContext;
 import org.apache.commons.io.FileUtils;
 
 import java.io.BufferedReader;
@@ -8,13 +9,13 @@ import java.io.FileReader;
 import java.io.IOException;
 
 public class LocalExecutor extends Executor {
-    public LocalExecutor(com.prezi.logbox.config.ExecutionConfiguration c) {
-        this.execConfig = c;
+    public LocalExecutor(ExecutionContext c) {
+        this.context = c;
     }
 
     public void execute() throws IOException {
-        File dir = execConfig.getLocalOutputDirectory();
-        if (execConfig.isCleanUpOutputDir()) {
+        File dir = context.getLocalOutputDirectory();
+        if (context.isCleanUpOutputDir()) {
             if (dir.isDirectory()) {
                 FileUtils.deleteDirectory(dir);
             } else {
@@ -28,10 +29,10 @@ public class LocalExecutor extends Executor {
 
         dir.mkdir();
 
-        BufferedReader br = new BufferedReader(new FileReader(execConfig.getLocalTestInputFile()));
+        BufferedReader br = new BufferedReader(new FileReader(context.getLocalTestInputFile()));
         String line;
-        com.prezi.logbox.config.CategoryConfiguration ruleConfig = execConfig.getRuleConfig().getCategoryConfigByName(
-                execConfig.getLocalTestCategory()
+        com.prezi.logbox.config.CategoryConfiguration ruleConfig = context.getRuleConfig().getCategoryConfigByName(
+                context.getLocalTestCategory()
         );
 
         while ((line = br.readLine()) != null) {

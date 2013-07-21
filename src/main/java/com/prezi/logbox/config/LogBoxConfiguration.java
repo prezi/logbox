@@ -15,10 +15,37 @@ import java.util.*;
 import java.util.regex.PatternSyntaxException;
 
 public class LogBoxConfiguration implements Serializable {
+
+    public String getInputCompression() {
+        return inputCompression;
+    }
+
+    @SerializedName("input_compression")
+    String inputCompression = null;
+
+    public String getOutputCompression() {
+        return outputCompression;
+    }
+
+    public void setOutputCompression(String outputCompression) {
+        this.outputCompression = outputCompression;
+    }
+
+    @SerializedName("output_compression")
+    String outputCompression = null;
+
     @SerializedName("categories")
     private ArrayList<CategoryConfiguration> categoryConfigurations;
 
-    private Log log = LogFactory.getLog(LogBoxConfiguration.class);
+    private transient Log log = LogFactory.getLog(LogBoxConfiguration.class);
+
+    public static LogBoxConfiguration fromConfig(String configJSON){
+        Gson gson = new Gson();
+        LogBoxConfiguration conf = gson.fromJson(configJSON, LogBoxConfiguration.class);
+
+        conf.setup();
+        return conf;
+    }
 
     public static LogBoxConfiguration loadConfig(File configFile)
             throws FileNotFoundException, JsonSyntaxException, PatternSyntaxException  {
@@ -29,8 +56,18 @@ public class LogBoxConfiguration implements Serializable {
         }
         Gson gson = new Gson();
         LogBoxConfiguration conf = gson.fromJson(new FileReader(configFile), LogBoxConfiguration.class);
-        conf.compileRules();
+
+        conf.setup();
         return conf;
+    }
+
+    public void setup(){
+        compileRules();
+    }
+
+    public String toJSON(){
+        Gson gson = new Gson();
+        return gson.toJson(this);
     }
 
     public void compileRules() throws PatternSyntaxException {
