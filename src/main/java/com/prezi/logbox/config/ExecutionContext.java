@@ -2,6 +2,7 @@ package com.prezi.logbox.config;
 
 import com.google.gson.JsonSyntaxException;
 import org.apache.commons.cli.*;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -9,6 +10,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.security.InvalidParameterException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
@@ -23,6 +26,11 @@ public class ExecutionContext {
     private Date endDate;
     private File localTestInputFile;
     private File localOutputDirectory;
+
+    public String getDateGlob() {
+        return dateGlob;
+    }
+
     private String dateGlob;
 
     public File getLocalOutputDirectory() {
@@ -88,12 +96,12 @@ public class ExecutionContext {
         this.endDate = endDate;
     }
 
-    public LogBoxConfiguration getRuleConfig() {
+    public LogBoxConfiguration getConfig() {
         return ruleConfig;
     }
 
-    public void setRuleConfig(LogBoxConfiguration ruleConfig) {
-        this.ruleConfig = ruleConfig;
+    public void setRuleConfig(LogBoxConfiguration config) {
+        this.ruleConfig = config;
     }
 
     private static void printCommandLineHelp(final Options options) {
@@ -221,6 +229,11 @@ public class ExecutionContext {
                     failWithCliParamError("Invalid date for end date.\n" + endDateStr.toString());
                 }
 
+                if (context.getStartDate().compareTo(context.getEndDate()) > 0){
+                    failWithCliParamError("Start date cannot precede end date.\n");
+                }
+
+
                 context.calculateDateGlob();
             } else {
                 context.setExecutionMode(com.prezi.logbox.config.ExecutionMode.LOCAL_TEST);
@@ -262,12 +275,12 @@ public class ExecutionContext {
             try {
                 context.setRuleConfig(LogBoxConfiguration.loadConfig(configFile));
                 if (context.getExecutionMode() == com.prezi.logbox.config.ExecutionMode.LOCAL_TEST) {
-                    context.getRuleConfig().applyFilters(new String[]{context.getLocalTestCategory()});
+                    context.getConfig().applyFilters(new String[]{context.getLocalTestCategory()});
                 }
 
                 if (cli.hasOption("rule-filters")) {
                     String[] filters = cli.getOptionValue("rule-filters").split(",");
-                    context.getRuleConfig().applyFilters(filters);
+                    context.getConfig().applyFilters(filters);
                 }
             } catch (FileNotFoundException e) {
                 failWithCliParamError("Config file " + configFileName + " doesn't exists or not readable");
@@ -291,15 +304,34 @@ public class ExecutionContext {
     }
 
     public void calculateDateGlob(){
-        //TODO: Calculate date glob
-        this.dateGlob = "{TODO-dateglob}";
+        if (startDate == null){
+            throw new IllegalArgumentException("No start date specified.");
+        }
+        if (endDate == null){
+            throw new IllegalArgumentException("No end date specified.");
+        }
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+
+        if (startDate == endDate){
+            dateGlob = dateFormat.format(startDate);
+        } else {
+            ArrayList<String> dates = new ArrayList<String>();
+
+            Calendar c = Calendar.getInstance();
+            c.setTime(startDate);
+            while (c.getTime().compareTo(endDate) < 1){
+                dates.add(dateFormat.format(c.getTime()));
+                c.add(Calendar.DATE,1);
+            }
+            dateGlob = "{" + StringUtils.join(dates.toArray(),',') + "}";
+        }
     }
 
-    public void setDateGlob(String dateGlob) {
-        this.dateGlob = dateGlob;
-    }
-
-    public String getDateGlob() {
-        return dateGlob;
+    public void compileDateGlob(){
+        calculateDateGlob();
+        for (CategoryConfiguration c : getConfig().getCategoryConfigurations()){
+            c.setInputGlob(c.getInputGlob().replace("${date_glob}", dateGlob));
+        }
     }
 }

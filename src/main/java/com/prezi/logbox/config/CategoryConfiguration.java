@@ -8,6 +8,10 @@ public class CategoryConfiguration {
     private String name;
     private ArrayList<Rule> rules;
 
+    public void setInputGlob(String inputGlob) {
+        this.inputGlob = inputGlob;
+    }
+
     @SerializedName("input_glob")
     private String inputGlob;
 

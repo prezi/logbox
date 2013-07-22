@@ -34,8 +34,26 @@ public class LogBoxConfiguration implements Serializable {
     @SerializedName("output_compression")
     String outputCompression = null;
 
+    public ArrayList<CategoryConfiguration> getCategoryConfigurations() {
+        return categoryConfigurations;
+    }
+
     @SerializedName("categories")
     private ArrayList<CategoryConfiguration> categoryConfigurations;
+
+    @SerializedName("output_location")
+    private String outputLocationBase;
+
+    public String getInputLocationPrefix() {
+        return inputLocationPrefix;
+    }
+
+    @SerializedName("input_location_prefix")
+    private String inputLocationPrefix;
+
+    public String getOutputLocationBase() {
+        return outputLocationBase;
+    }
 
     private transient Log log = LogFactory.getLog(LogBoxConfiguration.class);
 
@@ -63,6 +81,14 @@ public class LogBoxConfiguration implements Serializable {
 
     public void setup(){
         compileRules();
+    }
+
+    public void compileInputBaseName(String basename){
+        for (CategoryConfiguration c : categoryConfigurations){
+            for (Rule r : c.getRules()){
+                r.setOutputLocationTemplate(r.getOutputLocationTemplate().replace("${input_basename}",basename));
+            }
+        }
     }
 
     public String toJSON(){

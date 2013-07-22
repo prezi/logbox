@@ -12,8 +12,14 @@ public class Rule {
     private String regexStr;
     @SerializedName("output_format")
     private String outputFormat;
-    @SerializedName("output_config")
-    private String outputConfig;
+
+    public void setOutputLocationTemplate(String outputLocationTemplate) {
+        this.outputLocationTemplate = outputLocationTemplate;
+    }
+
+    @SerializedName("output_location")
+    private String outputLocationTemplate;
+
     @SerializedName("started_at")
     private String startedAt;
     private Pattern regexPattern;
@@ -32,10 +38,6 @@ public class Rule {
 
     public String getOutputFormat() {
         return outputFormat;
-    }
-
-    public String getOutputConfig() {
-        return outputConfig;
     }
 
     public String getStartedAt() {
@@ -58,7 +60,11 @@ public class Rule {
         return regexPattern.matcher(line).replaceAll(outputFormat);
     }
 
-    public String getOutputLocation() {
-        return "";
+    public String getOutputLocationTemplate() {
+        return outputLocationTemplate;
+    }
+
+    public String getSubstitutedOutputLocation(String line) {
+        return regexPattern.matcher(line).replaceAll(outputLocationTemplate);
     }
 }

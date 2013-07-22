@@ -31,7 +31,7 @@ public class LocalExecutor extends Executor {
 
         BufferedReader br = new BufferedReader(new FileReader(context.getLocalTestInputFile()));
         String line;
-        com.prezi.logbox.config.CategoryConfiguration ruleConfig = context.getRuleConfig().getCategoryConfigByName(
+        com.prezi.logbox.config.CategoryConfiguration ruleConfig = context.getConfig().getCategoryConfigByName(
                 context.getLocalTestCategory()
         );
 
