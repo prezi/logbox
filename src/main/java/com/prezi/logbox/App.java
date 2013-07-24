@@ -1,5 +1,6 @@
 package com.prezi.logbox;
 
+import com.prezi.FileUtils;
 import com.prezi.logbox.config.ExecutionContext;
 import com.prezi.logbox.config.ExecutionMode;
 import org.apache.commons.logging.Log;
@@ -10,6 +11,7 @@ public class App {
     private static Log log = LogFactory.getLog(App.class);
 
     public static void main(String[] args) throws Exception {
+
         ExecutionContext context = ExecutionContext.setupFromCLArgs(args);
 
         Executor executor = new Executor();

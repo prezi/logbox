@@ -1,5 +1,7 @@
 package com.prezi.logbox;
 
+import com.prezi.FileUtils;
+import com.prezi.hadoop.OverwriteOutputDirTextOutputFormat;
 import com.prezi.logbox.config.CategoryConfiguration;
 import com.prezi.logbox.config.ExecutionContext;
 import com.prezi.logbox.config.LogBoxConfiguration;
@@ -44,7 +46,7 @@ public class HadoopExecutor extends Executor {
         job.setMapperClass(Map.class);
 
         job.setInputFormatClass(TextInputFormat.class);
-        job.setOutputFormatClass(TextOutputFormat.class);
+        job.setOutputFormatClass(OverwriteOutputDirTextOutputFormat.class);
         FileOutputFormat.setCompressOutput(job, false);
 
         String inputLocationPrefix = context.getConfig().getInputLocationPrefix();
@@ -88,21 +90,6 @@ public class HadoopExecutor extends Executor {
         private LogBoxConfiguration config;
         private ArrayList<Rule> applicableRules = new ArrayList<Rule>();
 
-        public String getBaseName(String location) {
-            String[] parts = location.split("/");
-            String fileName = parts[parts.length - 1];
-            return fileName;
-
-            // TODO: deal with .lzo extension
-            /*
-            if ( config.getInputCompression().equals("lzo") && parts.length == 3 && parts[2].equals("lzo") ){
-                return parts[1] + "." + parts[2];
-            } else{
-                return parts[1];
-            }
-            */
-        }
-
         @Override
         protected void setup(Context context)
                 throws IOException, InterruptedException {
@@ -111,7 +98,12 @@ public class HadoopExecutor extends Executor {
 
             String configJSON = (String) context.getConfiguration().get("config.json");
             config = LogBoxConfiguration.fromConfig(configJSON);
-            inputBaseName = getBaseName(inputPath);
+            try {
+                inputBaseName = FileUtils.baseName(inputPath);
+            }
+            catch (Exception e){
+                throw new IOException(e.getMessage());
+            }
             log.info("Processing input path " + inputPath + ", using basename " + inputBaseName);
             config.compileInputBaseName(inputBaseName);
         }

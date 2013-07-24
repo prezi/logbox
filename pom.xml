@@ -47,7 +47,11 @@
             <artifactId>hadoop-lzo</artifactId>
             <version>0.4.17</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk</artifactId>
+            <version>1.5.1</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
