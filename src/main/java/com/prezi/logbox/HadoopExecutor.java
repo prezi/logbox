@@ -1,5 +1,6 @@
 package com.prezi.logbox;
 
+import com.hadoop.compression.lzo.LzopCodec;
 import com.prezi.FileUtils;
 import com.prezi.hadoop.OverwriteOutputDirTextOutputFormat;
 import com.prezi.logbox.config.CategoryConfiguration;
@@ -35,6 +36,8 @@ public class HadoopExecutor extends Executor {
 
     public void execute() throws IOException {
 
+        String x = System.getProperty("java.library.path");
+
         Configuration conf = new Configuration();
         conf.setStrings("config.json", context.getConfig().toJSON());
 
@@ -62,13 +65,12 @@ public class HadoopExecutor extends Executor {
         }
 
 
-        /* TODO: Enalble LZO on dev env
-        if ( context.getConfig().getOutputCompression() == "lzo"){
+        /* TODO: Enalble LZO on dev env */
+        if ( context.getConfig().getOutputCompression().equals("lzo")){
             FileOutputFormat.setCompressOutput(job, true);
-            FileOutputFormat.setOutputCompressorClass(job, LzoCodec.class);
+            FileOutputFormat.setOutputCompressorClass(job, LzopCodec.class);
         }
 
-        */
 
         FileOutputFormat.setOutputPath(job, new Path(context.getConfig().getOutputLocationBase()));
 
