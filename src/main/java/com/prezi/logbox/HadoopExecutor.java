@@ -36,8 +36,6 @@ public class HadoopExecutor extends Executor {
 
     public void execute() throws IOException {
 
-        String x = System.getProperty("java.library.path");
-
         Configuration conf = new Configuration();
         conf.setStrings("config.json", context.getConfig().toJSON());
 
@@ -64,11 +62,11 @@ public class HadoopExecutor extends Executor {
             FileInputFormat.addInputPath(job, new Path(inputLocation));
         }
 
-
-        /* TODO: Enalble LZO on dev env */
         if ( context.getConfig().getOutputCompression().equals("lzo")){
             FileOutputFormat.setCompressOutput(job, true);
             FileOutputFormat.setOutputCompressorClass(job, LzopCodec.class);
+
+            //TODO: Add dependent job for indexing
         }
 
 

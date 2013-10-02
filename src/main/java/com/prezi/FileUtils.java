@@ -4,7 +4,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class FileUtils {
+
     private static Pattern baseNamePattern = null;
+
     public static String baseName(String fileName) throws Exception {
         if ( baseNamePattern == null){
             baseNamePattern = Pattern.compile(".*/([^\\./]+)((\\.)([^\\./]+))?");
@@ -17,6 +19,36 @@ public class FileUtils {
         }
 
         return m.group(1);
+    }
+
+
+    private static Pattern protocolPattern = null;
+
+    public static Protocol protocolFromURI(String URI) throws Exception {
+        if ( protocolPattern == null){
+            protocolPattern = Pattern.compile("([^:]+)://.*");
+
+        }
+
+        Matcher m = protocolPattern.matcher(URI);
+        if (!m.matches()){
+            return null;
+        }
+
+        String protocolStr = m.group(1);
+        if (protocolStr == "s3" || protocolStr == "s3n"){
+            return Protocol.S3;
+        }
+        else if (protocolStr == "hdfs"){
+            return Protocol.HDFS;
+        }
+        else if (protocolStr == "file"){
+            return Protocol.LOCAL_FILE;
+        }
+        else {
+            throw new Exception(String.format("Unknown protocol: %s", protocolStr));
+        }
+
     }
 
     /**

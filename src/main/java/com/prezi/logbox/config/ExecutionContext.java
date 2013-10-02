@@ -1,6 +1,8 @@
 package com.prezi.logbox.config;
 
 import com.google.gson.JsonSyntaxException;
+import com.prezi.FileUtils;
+import com.prezi.Protocol;
 import org.apache.commons.cli.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -298,6 +300,15 @@ public class ExecutionContext {
             System.exit(103);
         } catch (ParseException e) {
             failWithCliParamError("Cannot parse parameters: " + e.getMessage());
+        }
+
+        try {
+            if (FileUtils.protocolFromURI(context.getConfig().getInputLocationPrefix()) == Protocol.S3){
+
+            }
+        }
+        catch (Exception e){
+            //TODO: Handle me
         }
 
         return context;
