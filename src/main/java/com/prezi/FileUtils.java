@@ -15,7 +15,7 @@ public class FileUtils {
 
         Matcher m = baseNamePattern.matcher(fileName);
         if (!m.matches()){
-            throw new Exception(String.format("Can't calculate basename for file: %s", baseNamePattern));
+            throw new Exception(String.format("Can't calculate basename for file: %s, pattern: %s", fileName, baseNamePattern));
         }
 
         return m.group(1);

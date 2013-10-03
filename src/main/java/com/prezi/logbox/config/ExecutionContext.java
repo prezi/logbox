@@ -193,6 +193,7 @@ public class ExecutionContext {
         return options;
     }
 
+    // miert static ?
     public static ExecutionContext setupFromCLArgs(String[] args) {
 
         ExecutionContext context = new ExecutionContext();

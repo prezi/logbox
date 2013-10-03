@@ -22,12 +22,11 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
+
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
-import java.io.IOException;
-import java.util.ArrayList;
 
 public class HadoopExecutor extends Configured implements Tool, Executor
 {
@@ -55,6 +54,7 @@ public class HadoopExecutor extends Configured implements Tool, Executor
         job.setOutputValueClass(Text.class);
 
         job.setMapperClass(Map.class);
+        job.setJarByClass(HadoopExecutor.class);
 
         job.setInputFormatClass(TextInputFormat.class);
         job.setOutputFormatClass(OverwriteOutputDirTextOutputFormat.class);
@@ -69,6 +69,7 @@ public class HadoopExecutor extends Configured implements Tool, Executor
         for (CategoryConfiguration c : context.getConfig().getCategoryConfigurations()) {
             String inputLocation = inputLocationPrefix + c.getInputGlob();
             log.info("Adding input glob: " + inputLocation);
+            FileInputFormat.setInputPathFilter(job, IndexFilter);
             FileInputFormat.addInputPath(job, new Path(inputLocation));
         }
 
@@ -94,20 +95,25 @@ public class HadoopExecutor extends Configured implements Tool, Executor
     }
 
     public static class Map extends Mapper<LongWritable, Text, NullWritable, Text> {
-        private Text word = new Text();
         private MultipleOutputs<NullWritable, Text> multipleOutputs;
         private String inputPath;
         private String inputBaseName;
         private LogBoxConfiguration config;
-        private ArrayList<Rule> applicableRules = new ArrayList<Rule>();
+        // private ArrayList<Rule> applicableRules = new ArrayList<Rule>();
 
         @Override
         protected void setup(Context context)
                 throws IOException, InterruptedException {
             inputPath = ((FileSplit) context.getInputSplit()).getPath().toString();
+            /*
+            if (inputPath.endsWith(".index")) {
+                log.info("Ignoring *.index files: " + inputPath);
+                return;
+            }
+            */
             multipleOutputs = new MultipleOutputs<NullWritable, Text>(context);
 
-            String configJSON = (String) context.getConfiguration().get("config.json");
+            String configJSON = context.getConfiguration().get("config.json");
             config = LogBoxConfiguration.fromConfig(configJSON);
             try {
                 inputBaseName = FileUtils.baseName(inputPath);
