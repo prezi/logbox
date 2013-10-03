@@ -10,6 +10,7 @@ import com.prezi.logbox.config.Rule;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
@@ -22,11 +23,14 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class HadoopExecutor extends Executor {
+public class HadoopExecutor extends Configured implements Tool, Executor
+{
     private static Log log = LogFactory.getLog(HadoopExecutor.class);
     private ExecutionContext context;
 
@@ -34,12 +38,18 @@ public class HadoopExecutor extends Executor {
         this.context = c;
     }
 
-    public void execute() throws IOException {
+    public void execute(String[] cliArgs) throws Exception {
+        int res = ToolRunner.run(new Configuration(), this, cliArgs);
+    }
+
+    @Override
+    public int run(String[] strings) throws Exception {
 
         Configuration conf = new Configuration();
         conf.setStrings("config.json", context.getConfig().toJSON());
 
         Job job = new Job(conf, "logbox");
+        job.setJarByClass(HadoopExecutor.class);
 
         job.setOutputKeyClass(NullWritable.class);
         job.setOutputValueClass(Text.class);
@@ -80,6 +90,7 @@ public class HadoopExecutor extends Executor {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
 
+        return 0;
     }
 
     public static class Map extends Mapper<LongWritable, Text, NullWritable, Text> {

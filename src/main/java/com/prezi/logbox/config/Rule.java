@@ -22,7 +22,8 @@ public class Rule {
 
     @SerializedName("started_at")
     private String startedAt;
-    private Pattern regexPattern;
+
+    private transient Pattern regexPattern;
 
     public Pattern getMatcherPattern() {
         return regexPattern;

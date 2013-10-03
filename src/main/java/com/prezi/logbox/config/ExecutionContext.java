@@ -2,6 +2,7 @@ package com.prezi.logbox.config;
 
 import com.google.gson.JsonSyntaxException;
 import com.prezi.FileUtils;
+import com.prezi.IgnoreUnknownParametersParser;
 import com.prezi.Protocol;
 import org.apache.commons.cli.*;
 import org.apache.commons.lang.StringUtils;
@@ -198,7 +199,7 @@ public class ExecutionContext {
 
         cliOptions = createCommandLineOptions();
 
-        CommandLineParser parser = new BasicParser();
+        CommandLineParser parser = new IgnoreUnknownParametersParser();
 
         try {
             CommandLine cli = parser.parse(cliOptions, args);

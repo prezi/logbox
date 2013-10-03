@@ -14,7 +14,7 @@ public class App {
 
         ExecutionContext context = ExecutionContext.setupFromCLArgs(args);
 
-        Executor executor = new Executor();
+        Executor executor;
         if (context.getExecutionMode() == ExecutionMode.LOCAL_TEST) {
             executor = new LocalExecutor(context);
         }
@@ -22,7 +22,7 @@ public class App {
             executor = new HadoopExecutor(context);
         }
 
-        executor.execute();
+        executor.execute(args);
 
     }
 }

@@ -34,12 +34,12 @@ public class LogBoxConfiguration implements Serializable {
     @SerializedName("output_compression")
     String outputCompression = null;
 
-    public ArrayList<CategoryConfiguration> getCategoryConfigurations() {
+    public LinkedList<CategoryConfiguration> getCategoryConfigurations() {
         return categoryConfigurations;
     }
 
     @SerializedName("categories")
-    private ArrayList<CategoryConfiguration> categoryConfigurations;
+    private LinkedList<CategoryConfiguration> categoryConfigurations;
 
     @SerializedName("output_location")
     private String outputLocationBase;
@@ -193,7 +193,7 @@ public class LogBoxConfiguration implements Serializable {
 
         // -- Eliminate unnecessary rules from the configuration
 
-        ArrayList<CategoryConfiguration> filteredConfiguration = new ArrayList<CategoryConfiguration>();
+        LinkedList<CategoryConfiguration> filteredConfiguration = new LinkedList<CategoryConfiguration>();
         for (CategoryConfiguration ruleCategories : categoryConfigurations) {
 
             // if the current category isn't mentioned in the filters, we don't care

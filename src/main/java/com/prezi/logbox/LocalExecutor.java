@@ -8,12 +8,15 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-public class LocalExecutor extends Executor {
+public class LocalExecutor implements Executor {
+
+    private ExecutionContext context;
+
     public LocalExecutor(ExecutionContext c) {
         this.context = c;
     }
 
-    public void execute() throws IOException {
+    public void execute(String[] cliArgs) throws IOException {
         File dir = context.getLocalOutputDirectory();
         if (context.isCleanUpOutputDir()) {
             if (dir.isDirectory()) {
