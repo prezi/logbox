@@ -27,6 +27,8 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
+import java.io.IOException;
+
 
 public class HadoopExecutor extends Configured implements Tool, Executor
 {
@@ -69,7 +71,7 @@ public class HadoopExecutor extends Configured implements Tool, Executor
         for (CategoryConfiguration c : context.getConfig().getCategoryConfigurations()) {
             String inputLocation = inputLocationPrefix + c.getInputGlob();
             log.info("Adding input glob: " + inputLocation);
-            FileInputFormat.setInputPathFilter(job, IndexFilter);
+            FileInputFormat.setInputPathFilter(job, IndexFilter.class);
             FileInputFormat.addInputPath(job, new Path(inputLocation));
         }
 
