@@ -16,12 +16,26 @@ import java.util.regex.PatternSyntaxException;
 
 public class LogBoxConfiguration implements Serializable {
 
-    public String getInputCompression() {
-        return inputCompression;
-    }
+    @SerializedName("categories")
+    private LinkedList<CategoryConfiguration> categoryConfigurations;
 
     @SerializedName("input_compression")
     String inputCompression = null;
+
+    @SerializedName("output_location")
+    private String outputLocationBase;
+
+    @SerializedName("input_location_prefix")
+    private String inputLocationPrefix;
+
+    @SerializedName("output_compression")
+    String outputCompression = null;
+
+    private transient Log log = LogFactory.getLog(LogBoxConfiguration.class);
+
+    public String getInputCompression() {
+        return inputCompression;
+    }
 
     public String getOutputCompression() {
         return outputCompression;
@@ -31,31 +45,17 @@ public class LogBoxConfiguration implements Serializable {
         this.outputCompression = outputCompression;
     }
 
-    @SerializedName("output_compression")
-    String outputCompression = null;
-
     public LinkedList<CategoryConfiguration> getCategoryConfigurations() {
         return categoryConfigurations;
     }
-
-    @SerializedName("categories")
-    private LinkedList<CategoryConfiguration> categoryConfigurations;
-
-    @SerializedName("output_location")
-    private String outputLocationBase;
 
     public String getInputLocationPrefix() {
         return inputLocationPrefix;
     }
 
-    @SerializedName("input_location_prefix")
-    private String inputLocationPrefix;
-
     public String getOutputLocationBase() {
         return outputLocationBase;
     }
-
-    private transient Log log = LogFactory.getLog(LogBoxConfiguration.class);
 
     public static LogBoxConfiguration fromConfig(String configJSON){
         Gson gson = new Gson();
@@ -83,7 +83,7 @@ public class LogBoxConfiguration implements Serializable {
         compileRules();
     }
 
-    public void compileInputBaseName(String basename){
+    public void compileInputBaseName(String basename) {
         for (CategoryConfiguration c : categoryConfigurations){
             for (Rule r : c.getRules()){
                 r.setOutputLocationTemplate(r.getOutputLocationTemplate().replace("${input_basename}",basename));
@@ -91,7 +91,7 @@ public class LogBoxConfiguration implements Serializable {
         }
     }
 
-    public String toJSON(){
+    public String toJSON() {
         Gson gson = new Gson();
         return gson.toJson(this);
     }
@@ -235,5 +235,9 @@ public class LogBoxConfiguration implements Serializable {
             }
         }
         return null;
+    }
+
+    public String getTemporalFilePrefix() {
+        return this.outputLocationBase + "/tmp/";
     }
 }

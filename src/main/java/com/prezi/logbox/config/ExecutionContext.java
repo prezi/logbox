@@ -21,20 +21,21 @@ import java.util.Locale;
 public class ExecutionContext {
 
     private static Log log = LogFactory.getLog(ExecutionContext.class);
-    private static Options cliOptions;
+    private static Options commandLineOptions;
 
-    private com.prezi.logbox.config.ExecutionMode executionMode;
+    private ExecutionMode executionMode;
     private LogBoxConfiguration ruleConfig;
     private Date startDate;
     private Date endDate;
     private File localTestInputFile;
     private File localOutputDirectory;
+    private String dateGlob;
+    private boolean cleanUpOutputDir = false;
+    private String localTestCategory;
 
     public String getDateGlob() {
         return dateGlob;
     }
-
-    private String dateGlob;
 
     public File getLocalOutputDirectory() {
         return localOutputDirectory;
@@ -43,8 +44,6 @@ public class ExecutionContext {
     public void setLocalOutputDirectory(File localOutputDirectory) {
         this.localOutputDirectory = localOutputDirectory;
     }
-
-    private boolean cleanUpOutputDir = false;
 
     public void setCleanUpOutputDir(boolean cleanUpOutputDir) {
         this.cleanUpOutputDir = cleanUpOutputDir;
@@ -71,9 +70,6 @@ public class ExecutionContext {
         this.localTestCategory = localTestCategory;
     }
 
-    private String localTestCategory;
-
-
     public com.prezi.logbox.config.ExecutionMode getExecutionMode() {
         return executionMode;
     }
@@ -81,7 +77,6 @@ public class ExecutionContext {
     public void setExecutionMode(com.prezi.logbox.config.ExecutionMode executionMode) {
         this.executionMode = executionMode;
     }
-
 
     public Date getStartDate() {
         return startDate;
@@ -113,7 +108,7 @@ public class ExecutionContext {
     }
 
     private static void failWithCliParamError(final String error) {
-        printCommandLineHelp(cliOptions);
+        printCommandLineHelp(commandLineOptions);
         System.err.println("ERROR: " + (error));
         System.exit(101);
 
@@ -198,12 +193,12 @@ public class ExecutionContext {
 
         ExecutionContext context = new ExecutionContext();
 
-        cliOptions = createCommandLineOptions();
+        commandLineOptions = createCommandLineOptions();
 
         CommandLineParser parser = new IgnoreUnknownParametersParser();
 
         try {
-            CommandLine cli = parser.parse(cliOptions, args);
+            CommandLine cli = parser.parse(commandLineOptions, args);
 
 
             if (!cli.hasOption("run") && !cli.hasOption("local-test"))

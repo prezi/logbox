@@ -2,38 +2,47 @@ package com.prezi.logbox;
 
 import com.hadoop.compression.lzo.DistributedLzoIndexer;
 import com.hadoop.compression.lzo.LzopCodec;
-import com.prezi.FileUtils;
 import com.prezi.hadoop.OverwriteOutputDirTextOutputFormat;
 import com.prezi.logbox.config.CategoryConfiguration;
 import com.prezi.logbox.config.ExecutionContext;
 import com.prezi.logbox.config.LogBoxConfiguration;
 import com.prezi.logbox.config.Rule;
-import com.sun.xml.internal.xsom.impl.scd.Iterators;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Counters;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
-
-
+import org.apache.hadoop.mapreduce.lib.output.LazyOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
-import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashSet;
 
+enum LineCounter {
+    SUBSTITUTED,
+    EMITTED_IN_MAPPER,
+    OMITTED_IN_MAPPER
+}
 
-
+enum MalformedRecord {
+    FROM_MAPPER
+}
+enum FileCounter {
+    INPUT_FILES
+}
 public class HadoopExecutor extends Configured implements Tool, Executor
 {
     private static Log log = LogFactory.getLog(HadoopExecutor.class);
@@ -42,16 +51,84 @@ public class HadoopExecutor extends Configured implements Tool, Executor
     private String[] outdirList;
     private Boolean indexing;
 
+    ArrayList<String> ruleNames;
     public HadoopExecutor(ExecutionContext c) {
         this.context = c;
     }
 
-    public void execute(String[] cliArgs) throws Exception {
-        int res = ToolRunner.run(new Configuration(), this, cliArgs);
-
-        if (indexing) {
-            int exitCode = ToolRunner.run(new DistributedLzoIndexer(), outdirList);
+    private void ruleNames() {
+        ruleNames = new ArrayList<String>();
+        LogBoxConfiguration logBoxConfiguration = this.context.getConfig();
+        for (CategoryConfiguration c : logBoxConfiguration.getCategoryConfigurations()) {
+          for (Rule r : c.getRules()) {
+            ruleNames.add(r.getName());
+          }
         }
+    }
+    public void execute(String[] cliArgs) throws Exception {
+
+        Configuration conf = new Configuration();
+        String temporalFilePrefix = context.getConfig().getTemporalFilePrefix();
+        URI uri = URI.create(temporalFilePrefix);
+        FileSystem fs = FileSystem.get(uri, conf);
+
+        HashSet<String> directories = new HashSet<String>();
+
+        int res = ToolRunner.run(conf, this, cliArgs);
+        try{
+            FileStatus[] fss = fs.listStatus(new Path(temporalFilePrefix));
+            for (FileStatus status : fss) {
+                Path path = status.getPath();
+                BufferedReader br=new BufferedReader(new InputStreamReader(fs.open(path)));
+
+                String line;
+                line = br.readLine();
+                while (line != null){
+                    directories.add(context.getConfig().getOutputLocationBase() + line);
+                    line=br.readLine();
+                }
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+            log.error("Temporary file not found. Indexing failed.");
+        }
+        log.info("Number of subdirectories: " + directories.size());
+        int counter = 0;
+        outdirList = new String[10];
+        for (String dir : directories) {
+            outdirList[counter%10] = dir;
+            if (counter%10 == 9) {
+                if (indexing) {
+                    int exitCode = ToolRunner.run(new DistributedLzoIndexer(), outdirList);
+                    outdirList = new String[10];
+                } else {
+                    for (String s : outdirList){
+                        System.out.println(s);
+                    }
+                }
+
+            }
+
+            counter++;
+        }
+        int r = counter%10;
+        String[] rest = new String[r];
+        for (int i = 0; i< r; i++) {
+            rest[i] = outdirList[i];
+        }
+        if (indexing) {
+
+            int exitCode = ToolRunner.run(new DistributedLzoIndexer(), rest);
+        } else {
+            for (String s : rest){
+                System.out.println(s);
+            }
+        }
+        fs.delete(new Path(context.getConfig().getTemporalFilePrefix()), true);
+    }
+
+    public static Log getLog() {
+        return log;
     }
 
     @Override
@@ -66,13 +143,15 @@ public class HadoopExecutor extends Configured implements Tool, Executor
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(NullWritable.class);
 
-        job.setMapperClass(Map.class);
-        job.setReducerClass(Reduce.class);
+        job.setMapperClass(SubstituteLineMapper.class);
+        job.setReducerClass(SubstituteLineReducer.class);
 
         job.setJarByClass(HadoopExecutor.class);
 
         job.setInputFormatClass(TextInputFormat.class);
         job.setOutputFormatClass(OverwriteOutputDirTextOutputFormat.class);
+        LazyOutputFormat.setOutputFormatClass(job, OverwriteOutputDirTextOutputFormat.class);
+        job.setNumReduceTasks(39);
 
         FileOutputFormat.setCompressOutput(job, false);
         indexing = false;
@@ -99,8 +178,7 @@ public class HadoopExecutor extends Configured implements Tool, Executor
         }
 
 
-        outdirList = new String[1];
-        outdirList[0] = context.getConfig().getOutputLocationBase();
+        outdirList = new String[10];
 
         FileOutputFormat.setOutputPath(job, new Path(context.getConfig().getOutputLocationBase()));
 
@@ -112,77 +190,25 @@ public class HadoopExecutor extends Configured implements Tool, Executor
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
 
+
+        Counters counters = job.getCounters();
+        long duplicates = counters.findCounter(LineCounter.EMITTED_IN_MAPPER).getValue()
+                - counters.findCounter(LineCounter.SUBSTITUTED).getValue();
+/*
+        System.out.println("Number of lines read by mappers: " + counters.findCounter(Task.Counter.MAP_INPUT_RECORDS).getValue() );
+        System.out.println("Number of unchanged lines: " + counters.findCounter(LineCounter.OMITTED_IN_MAPPER).getValue());
+        System.out.println("Number of lines written by reducers: " + counters.findCounter(LineCounter.SUBSTITUTED).getValue());
+        System.out.println("Number of duplicates (filtered out by reducer) : " + duplicates);
+        System.out.println("Number of malformed records from mapper: " + counters.findCounter(MalformedRecord.FROM_MAPPER).getValue());
+        System.out.println("Number of malformed records from mapper: " + counters.findCounter(MalformedRecord.FROM_MAPPER).getValue());
+        System.out.println("Number of input files: " + counters.findCounter(FileCounter.INPUT_FILES).getValue());
+        
+        ruleNames();
+        for (String ruleName : ruleNames) {
+            System.out.println("Number of records from rule type " + ruleName + ": " + counters.findCounter("RuleTypesInMapper", ruleName).getValue());
+        }
+*/
         return 0;
-    }
-
-    public static class Map extends Mapper<LongWritable, Text,  Text, NullWritable> {
-
-        private String inputPath;
-        private String inputBaseName;
-        private LogBoxConfiguration config;
-
-        @Override
-        protected void setup(Context context)
-                throws IOException, InterruptedException {
-            inputPath = ((FileSplit) context.getInputSplit()).getPath().toString();
-
-            String configJSON = context.getConfiguration().get("config.json");
-            config = LogBoxConfiguration.fromConfig(configJSON);
-            try {
-                inputBaseName = FileUtils.baseName(inputPath);
-            }
-            catch (Exception e){
-                throw new IOException(e.getMessage());
-            }
-            log.info("Processing input path " + inputPath + ", using basename " + inputBaseName);
-            config.compileInputBaseName(inputBaseName);
-        }
-
-        @Override
-        public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
-            String line = value.toString();
-            if (line.trim().isEmpty()) {
-                return;
-            }
-
-            //TODO: Regex match on input location, regex -> glob
-            for (CategoryConfiguration c : config.getCategoryConfigurations()) {
-                for (Rule r : c.getRules()) {
-                    if (r.matches(line)) {
-                        Text lineAndLocation = new Text(r.getSubstitutedLine(line) + "|" + r.getSubstitutedOutputLocation(line) + "/part");
-                        context.write(lineAndLocation, NullWritable.get());
-                    }
-                }
-            }
-        }
-
-        @Override
-        protected void cleanup(Context context)
-                throws IOException, InterruptedException {
-
-        }
-    }
-
-    public static class Reduce extends Reducer<Text, NullWritable, Text, NullWritable> {
-        private MultipleOutputs<Text, NullWritable> multipleOutputs;
-
-        @Override
-        protected void setup(Context context) throws IOException, InterruptedException {
-            multipleOutputs = new MultipleOutputs<Text, NullWritable>(context);
-        }
-
-        @Override
-        protected void reduce(Text key, Iterable<NullWritable> values, Context context) throws IOException, InterruptedException {
-            String[] fields = key.toString().split("\\|");
-            if (fields.length == 2) {
-                multipleOutputs.write(new Text(fields[0]), NullWritable.get(), fields[1]);
-            }
-        }
-
-        @Override
-        protected void cleanup(Context context) throws IOException, InterruptedException {
-            multipleOutputs.close();
-        }
     }
 
 }
