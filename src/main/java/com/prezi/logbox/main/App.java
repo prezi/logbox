@@ -1,20 +1,12 @@
-package com.prezi.logbox;
+package com.prezi.logbox.main;
 
+import com.prezi.logbox.executor.Executor;
+import com.prezi.logbox.executor.HadoopExecutor;
+import com.prezi.logbox.executor.LocalExecutor;
 import com.prezi.logbox.config.ExecutionContext;
 import com.prezi.logbox.config.ExecutionMode;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-
-
-// 1. s3 reading/writing - 1
-// 2. mukodik-e etl-en? - ...
-
-// clean-up -> ??? - hetfo
-// lzo index -
-
-// distinct - reducer
-
 
 
 public class App {
@@ -32,8 +24,6 @@ public class App {
         else {
             executor = new HadoopExecutor(context);
         }
-
         executor.execute(args);
-
     }
 }

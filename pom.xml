@@ -60,7 +60,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.prezi.logbox.App</mainClass>
+                            <mainClass>com.prezi.logbox.main.App</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

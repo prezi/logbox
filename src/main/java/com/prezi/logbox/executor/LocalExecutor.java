@@ -1,10 +1,9 @@
-package com.prezi.logbox;
+package com.prezi.logbox.executor;
 
 import com.prezi.logbox.config.ExecutionContext;
-import org.apache.commons.io.FileUtils;
+import com.prezi.logbox.utils.FileUtils;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
@@ -17,20 +16,13 @@ public class LocalExecutor implements Executor {
     }
 
     public void execute(String[] cliArgs) throws IOException {
-        File dir = context.getLocalOutputDirectory();
-        if (context.isCleanUpOutputDir()) {
-            if (dir.isDirectory()) {
-                FileUtils.deleteDirectory(dir);
-            } else {
-                dir.delete();
-            }
+        String inputBaseName;
+        try {
+            inputBaseName = FileUtils.baseName(context.getLocalTestInputFileName());
+        } catch (Exception e) {
+            throw new IOException(e.getMessage());
         }
-
-        if (dir.exists()) {
-            throw new IOException("Output directory " + dir.getName() + " already exists.");
-        }
-
-        dir.mkdir();
+        context.getConfig().compileInputBaseName(inputBaseName);
 
         BufferedReader br = new BufferedReader(new FileReader(context.getLocalTestInputFile()));
         String line;
@@ -41,7 +33,7 @@ public class LocalExecutor implements Executor {
         while ((line = br.readLine()) != null) {
             for (com.prezi.logbox.config.Rule r : ruleConfig.getRules()){
                 if ( r.matches(line)){
-                    System.out.println(r.getSubstitutedLine(line));
+                    System.out.println(r.getSubstitutedOutputLocation(line) +"\t<-\t" + r.getSubstitutedLine(line));
                 }
             }
         }

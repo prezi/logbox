@@ -1,4 +1,4 @@
-package com.prezi;
+package com.prezi.logbox.utils;
 
 /**
  * Created with IntelliJ IDEA.

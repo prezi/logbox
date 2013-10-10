@@ -4,13 +4,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 
-/**
- * Created with IntelliJ IDEA.
- * User: julcsi
- * Date: 10/8/13
- * Time: 5:55 PM
- * To change this template use File | Settings | File Templates.
- */
+
 public class CommandLineOptions {
 
     Options _options;
@@ -22,7 +16,6 @@ public class CommandLineOptions {
     private void create() {
         _options.addOption("rd", "run", false, "Run logbox on hadoop");
         _options.addOption("rt", "local-test", false, "Test logbox locally");
-        _options.addOption("c", "cleanup", false, "Remove output dir before running");
 
         _options.addOption(
                 OptionBuilder
@@ -77,15 +70,6 @@ public class CommandLineOptions {
                         .withValueSeparator(',')
                         .withArgName("filter-list")
                         .create("f")
-        );
-
-        _options.addOption(
-                OptionBuilder
-                        .withLongOpt("local-output-dir")
-                        .withDescription("Output directory for local test")
-                        .hasArg()
-                        .withArgName("directory")
-                        .create("d")
         );
     }
 

@@ -1,6 +1,6 @@
 package com.prezi.logbox.config;
 
-import com.prezi.IgnoreUnknownParametersParser;
+import com.prezi.logbox.utils.IgnoreUnknownParametersParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.ParseException;
@@ -14,37 +14,22 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-/**
- * Created with IntelliJ IDEA.
- * User: julcsi
- * Date: 10/8/13
- * Time: 5:32 PM
- */
 public class CommandLineArguments {
     private Date startDate;
     private Date endDate;
     private String dateGlob;
-    private boolean cleanUpOutputDir = false;
     private String localTestCategory;
     private CommandLineOptions commandLineOptions;
     private ExecutionMode executionMode;
 
     private File localTestInputFile;
-    private File localOutputDirectory;
     private File configFile;
     private String[] filters;
     private String configFileName;
+    private String localTestInputFileName;
 
     public CommandLineArguments() {
         commandLineOptions = new CommandLineOptions();
-    }
-
-    public void setCleanUpOutputDir(boolean cleanUpOutputDir) {
-        this.cleanUpOutputDir = cleanUpOutputDir;
-    }
-
-    public boolean isCleanUpOutputDir() {
-        return cleanUpOutputDir;
     }
 
     public String getLocalTestCategory() {
@@ -122,6 +107,7 @@ public class CommandLineArguments {
             failWithCliParamError("Running in local mode: Please specify an input file");
         }
 
+        localTestInputFileName = commandLine.getOptionValue("input-location");
         File localInputFile = new File(commandLine.getOptionValue("input-location"));
 
         if (!localInputFile.canRead()) {
@@ -135,20 +121,11 @@ public class CommandLineArguments {
         if (!commandLine.hasOption("test-category")) {
             failWithCliParamError("Running in local mode: Please specify a test category");
         }
-
         setLocalTestCategory(commandLine.getOptionValue("test-category"));
-
-        if (!commandLine.hasOption("local-output-dir")) {
-            failWithCliParamError("Running in local mode: Please specify an output directory");
-        }
     }
 
-    private void processLocalOutput(CommandLine commandLine) {
-        localOutputDirectory = new File(commandLine.getOptionValue("local-output-dir"));
-    }
 
     private void processConfigOption(CommandLine commandLine) {
-
         if (commandLine.hasOption("config")) {
             configFileName = commandLine.getOptionValue("config");
         } else {
@@ -172,13 +149,9 @@ public class CommandLineArguments {
                 setExecutionMode(com.prezi.logbox.config.ExecutionMode.LOCAL_TEST);
                 processLocalInput(commandLine);
                 processLocalTestCategory(commandLine);
-                processLocalOutput(commandLine);
             }
             processConfigOption(commandLine);
 
-            if (commandLine.hasOption("cleanup")) {
-                setCleanUpOutputDir(true);
-            }
             if (commandLine.hasOption("rule-filters")) {
                 filters = commandLine.getOptionValue("rule-filters").split(",");
             } else {
@@ -228,7 +201,7 @@ public class CommandLineArguments {
         return localTestInputFile;
     }
 
-    public File getLocalOutputDirectory() {
-        return localOutputDirectory;
+    public String getLocalTestInputFileName() {
+        return localTestInputFileName;
     }
 }

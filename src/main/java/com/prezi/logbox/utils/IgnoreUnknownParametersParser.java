@@ -1,4 +1,4 @@
-package com.prezi;
+package com.prezi.logbox.utils;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.ParseException;

@@ -1,22 +1,13 @@
 package com.prezi.logbox.config;
 
 import com.google.gson.JsonSyntaxException;
-import com.prezi.FileUtils;
-import com.prezi.IgnoreUnknownParametersParser;
-import com.prezi.Protocol;
-import org.apache.commons.cli.*;
-import org.apache.commons.lang.StringUtils;
+import com.prezi.logbox.utils.FileUtils;
+import com.prezi.logbox.utils.Protocol;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.security.InvalidParameterException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
 
 public class ExecutionContext {
 
@@ -37,14 +28,10 @@ public class ExecutionContext {
     }
 
 
-    //public ExecutionContext setupFromCommandLineArgs(String[] args) {
-public  void setupFromCommandLineArgs(String[] args) {
-        //ExecutionContext context = new ExecutionContext();
-        // read arguments
+    public  void setupFromCommandLineArgs(String[] args) {
         commandLineArguments = new CommandLineArguments();
         commandLineArguments.parseArguments(args);
-        // LogBoxConfiguration.setDateGlob(commandLineArguments.getDateGlob());
-        // then getting information from config.json
+
         try {
             setRuleConfig(LogBoxConfiguration.loadConfig(commandLineArguments.getConfigFile()));
             if (commandLineArguments.getExecutionMode() == com.prezi.logbox.config.ExecutionMode.LOCAL_TEST) {
@@ -64,20 +51,14 @@ public  void setupFromCommandLineArgs(String[] args) {
             }
         }
         catch (Exception e){
-            //TODO: Handle me
+            e.printStackTrace();
         }
-
     }
-
 
     public void compileDateGlob(){
         for (CategoryConfiguration c : getConfig().getCategoryConfigurations()){
             c.setInputGlob(c.getInputGlob().replace("${date_glob}", commandLineArguments.getDateGlob()));
         }
-    }
-
-    public boolean isCleanUpOutputDir() {
-        return commandLineArguments.isCleanUpOutputDir();
     }
 
     public String getLocalTestCategory() {
@@ -88,11 +69,11 @@ public  void setupFromCommandLineArgs(String[] args) {
         return commandLineArguments.getLocalTestInputFile();
     }
 
-    public File getLocalOutputDirectory() {
-        return commandLineArguments.getLocalOutputDirectory();
-    }
-
     public String getDateGlob() {
         return commandLineArguments.getDateGlob();
+    }
+
+    public String getLocalTestInputFileName() {
+        return commandLineArguments.getLocalTestInputFileName();
     }
 }

@@ -1,9 +1,8 @@
 package com.prezi.logbox.config;
 
 import com.google.gson.annotations.SerializedName;
-import com.prezi.FileUtils;
+import com.prezi.logbox.utils.FileUtils;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.regex.Pattern;
 
@@ -12,16 +11,13 @@ public class CategoryConfiguration {
     private LinkedList<Rule> rules;
     private transient Pattern regexPattern;
 
-    @SerializedName("input_glob")
-    private String inputGlob;
-
     public void setInputGlob(String inputGlob) {
         this.inputGlob = inputGlob;
-
         regexPattern = Pattern.compile(FileUtils.globToRegex(this.inputGlob));
     }
 
-    public CategoryConfiguration(){}
+    @SerializedName("input_glob")
+    private String inputGlob;
 
     public CategoryConfiguration(String name) {
         this.name = name;
@@ -42,14 +38,11 @@ public class CategoryConfiguration {
     }
 
     public boolean matches(String filename, String globDate) {
-
         String replacedGlob = inputGlob.replaceAll("\\$\\{date_glob\\}", globDate);
-        String regex = FileUtils.globToRegex(replacedGlob);
         if (regexPattern == null) {
-            regexPattern = Pattern.compile(".*" + regex);
+            regexPattern = Pattern.compile(".*" + FileUtils.globToRegex(replacedGlob));
         }
-
-        return  regexPattern.matcher(filename).find();
+        return regexPattern.matcher(filename).find();
     }
 
 }

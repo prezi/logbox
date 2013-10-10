@@ -1,4 +1,4 @@
-package com.prezi.logbox;
+package com.prezi.logbox.mapreduce;
 
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;

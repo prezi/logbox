@@ -1,4 +1,4 @@
-package com.prezi;
+package com.prezi.logbox.utils;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -10,7 +10,6 @@ public class FileUtils {
     public static String baseName(String fileName) throws Exception {
         if ( baseNamePattern == null){
             baseNamePattern = Pattern.compile(".*/([^\\./]+)((\\.)([^\\./]+))?");
-
         }
 
         Matcher m = baseNamePattern.matcher(fileName);
@@ -27,7 +26,6 @@ public class FileUtils {
     public static Protocol protocolFromURI(String URI) throws Exception {
         if ( protocolPattern == null){
             protocolPattern = Pattern.compile("([^:]+)://.*");
-
         }
 
         Matcher m = protocolPattern.matcher(URI);

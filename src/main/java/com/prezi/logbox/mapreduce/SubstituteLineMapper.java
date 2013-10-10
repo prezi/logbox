@@ -1,6 +1,7 @@
-package com.prezi.logbox;
+package com.prezi.logbox.mapreduce;
 
-import com.prezi.FileUtils;
+import com.prezi.logbox.utils.FileUtils;
+import com.prezi.logbox.executor.HadoopExecutor;
 import com.prezi.logbox.config.CategoryConfiguration;
 import com.prezi.logbox.config.LogBoxConfiguration;
 import com.prezi.logbox.config.Rule;

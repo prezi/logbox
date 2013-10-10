@@ -1,6 +1,4 @@
-package com.prezi.logbox;
-
-import com.prezi.logbox.config.ExecutionContext;
+package com.prezi.logbox.executor;
 
 public interface Executor {
 

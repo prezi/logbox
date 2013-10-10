@@ -1,7 +1,8 @@
-package com.prezi.logbox;
+package com.prezi.logbox.executor;
 
 import com.hadoop.compression.lzo.DistributedLzoIndexer;
 import com.prezi.logbox.config.ExecutionContext;
+import com.prezi.logbox.mapreduce.LogBox;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
