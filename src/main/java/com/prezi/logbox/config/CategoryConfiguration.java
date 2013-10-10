@@ -10,17 +10,16 @@ import java.util.regex.Pattern;
 public class CategoryConfiguration {
     private String name;
     private LinkedList<Rule> rules;
-    Pattern regexPattern;
+    private transient Pattern regexPattern;
+
+    @SerializedName("input_glob")
+    private String inputGlob;
 
     public void setInputGlob(String inputGlob) {
         this.inputGlob = inputGlob;
 
         regexPattern = Pattern.compile(FileUtils.globToRegex(this.inputGlob));
     }
-
-    @SerializedName("input_glob")
-    private String inputGlob;
-
 
     public CategoryConfiguration(){}
 
