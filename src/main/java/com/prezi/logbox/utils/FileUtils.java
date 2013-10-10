@@ -34,13 +34,13 @@ public class FileUtils {
         }
 
         String protocolStr = m.group(1);
-        if (protocolStr == "s3" || protocolStr == "s3n"){
+        if (protocolStr.equals("s3") || protocolStr.equals("s3n")){
             return Protocol.S3;
         }
-        else if (protocolStr == "hdfs"){
+        else if (protocolStr.equals("hdfs")){
             return Protocol.HDFS;
         }
-        else if (protocolStr == "file"){
+        else if (protocolStr.equals("file")){
             return Protocol.LOCAL_FILE;
         }
         else {
