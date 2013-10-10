@@ -55,7 +55,10 @@ With start and end date you can specify the time range to process. (If start equ
 You need a config file of json format describe your job: input and output path, file types and your rules.
 For more information, see example_config.json
 
-Config file
+
+
+=== Config file ===
+
 
 Your rules must be defined in the config file (using json format). Your rules can be grouped into categories: for categries you can specify the input files ("input_glob"). It is useful if your logs are already sorted into folders according some properties.
 
@@ -65,10 +68,8 @@ Next to the rules the input and output folder and the compression types must be 
 Logbox supports LZO compression (https://github.com/twitter/hadoop-lzo) but it also works with uncompressed text files. 
 If you choose lzo as output_compression, the Logbox will index your output files. This can take a while.
 
-"input_compression": "lzo",
-    "input_location_prefix": "s3://my_logs_are_here/",
-    "output_compression": "lzo",
-    "output_location": "s3://my_logs_are_here/sorted_log/"
+
+
  === Notes ===
 
 
