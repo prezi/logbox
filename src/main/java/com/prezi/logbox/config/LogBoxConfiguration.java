@@ -33,6 +33,7 @@ public class LogBoxConfiguration implements Serializable {
 
     private transient Log log = LogFactory.getLog(LogBoxConfiguration.class);
 
+
     public String getInputCompression() {
         return inputCompression;
     }

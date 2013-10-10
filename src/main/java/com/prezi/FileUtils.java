@@ -62,6 +62,7 @@ public class FileUtils {
      * @param pattern A glob pattern.
      * @return A regex pattern to recognize the given glob pattern.
      */
+
     public static final String globToRegex(String pattern) {
         StringBuilder sb = new StringBuilder(pattern.length());
         int inGroup = 0;

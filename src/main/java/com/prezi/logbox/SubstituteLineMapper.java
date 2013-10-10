@@ -4,6 +4,8 @@ import com.prezi.FileUtils;
 import com.prezi.logbox.config.CategoryConfiguration;
 import com.prezi.logbox.config.LogBoxConfiguration;
 import com.prezi.logbox.config.Rule;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -26,6 +28,7 @@ public class SubstituteLineMapper extends Mapper<LongWritable, Text, Text, NullW
     private LogBoxConfiguration config;
     private HashSet<String> outputPaths;
     private String temporalFilePrefix;
+    private static Log log = LogFactory.getLog(HadoopExecutor.class);
 
     @Override
     protected void setup(Context context)
@@ -43,7 +46,7 @@ public class SubstituteLineMapper extends Mapper<LongWritable, Text, Text, NullW
         } catch (Exception e) {
             throw new IOException(e.getMessage());
         }
-        HadoopExecutor.getLog().info("Processing input path " + inputPath + ", using basename " + inputBaseName);
+        log.info("Processing input path " + inputPath + ", using basename " + inputBaseName);
         config.compileInputBaseName(inputBaseName);
     }
 
@@ -56,16 +59,18 @@ public class SubstituteLineMapper extends Mapper<LongWritable, Text, Text, NullW
 
         //TODO: Regex match on input location, regex -> glob
         for (CategoryConfiguration c : config.getCategoryConfigurations()) {
-            for (Rule r : c.getRules()) {
-                if (r.matches(line)) {
-                    String locationPrefix = r.getSubstitutedOutputLocation(line);
-                    outputPaths.add(locationPrefix);
+            if (c.matches(inputPath, context.getConfiguration().get("date_glob"))) {
+                for (Rule r : c.getRules()) {
+                    if (r.matches(line)) {
+                        String locationPrefix = r.getSubstitutedOutputLocation(line);
+                        outputPaths.add(locationPrefix);
 
-                    Text lineAndLocation = new Text(r.getSubstitutedLine(line) + "|" + locationPrefix + "/part" + "|" + r.getName());
-                    context.write(lineAndLocation, NullWritable.get());
-                    context.getCounter(LineCounter.EMITTED_IN_MAPPER).increment(1);
-                } else {
-                    context.getCounter(LineCounter.OMITTED_IN_MAPPER).increment(1);
+                        Text lineAndLocation = new Text(r.getSubstitutedLine(line) + "|" + locationPrefix + "/part" + "|" + r.getName());
+                        context.write(lineAndLocation, NullWritable.get());
+                        context.getCounter(LineCounter.EMITTED_IN_MAPPER).increment(1);
+                    } else {
+                        context.getCounter(LineCounter.OMITTED_IN_MAPPER).increment(1);
+                    }
                 }
             }
         }
