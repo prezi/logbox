@@ -75,16 +75,22 @@ For more information, see example_config.json
 ### Config file
 
 
+#### Rules
+
 Your rules must be defined in the config file (using json format). Your rules can be grouped into categories: for categries you can specify the input files ("input_glob"). It is useful if your logs are already sorted into folders according some properties.
 
 For each rule you can give a description, a name, a regular expression to be matched ("match"), the output format("output_format"), describing which parts of the original line should be kept, an output location ("output_location") and a date ("started_at") that tells when this rule (or the feature we log about) was intoduced.
 
-Next to the rules the input and output folder and the compression types must be defined in the config file(in case of work mode).
+
+#### Input/Output location and properties
+
+Also the input and output folder and the compression types must be defined in the config file (in case of work mode).
 Logbox supports [LZO compression](https://github.com/twitter/hadoop-lzo) but it also works with uncompressed text files. 
 If you choose lzo as output_compression, the Logbox will index your output files. This can take a while.
-
+Another useful feature that you can specify with a regexp how the filenames produced by LogBox should look like. This can be very useful if you want to aggregate your results, e.g. instead of having files containing logs of a 1-hour timespan, you can store your sorted logs in daily resolution. 
+Why might you need this?
+As indexing of lzo file scales not very well, it is not practical having hundreds or thousend of small lzo files. 
 
 #### Notes
 
-
-You may specify an already existing output directory when running on hadoop. In this case files might be overwritten (if the program has to write into a file that has already been existed).
+When running LogBox you may specify an already existing output directory, but be careful: if the job should write into an already existing file LogBox WILL overwrite them without notification (unlike a standard hadoob job). In our case this is the expected behaviour, we use a clever output location naming convention in order that no important files will be lost.
