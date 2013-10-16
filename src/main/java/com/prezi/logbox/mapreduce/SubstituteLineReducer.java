@@ -18,16 +18,24 @@ public class SubstituteLineReducer  extends Reducer<Text, NullWritable, Text, Nu
     @Override
     protected void reduce(Text key, Iterable<NullWritable> values, Context context) throws IOException, InterruptedException {
         String[] fields = key.toString().split("\\|");
-        if (fields.length == 3) {
-            String substituted_line = fields[0];
-            String location = fields[1];
-            String rule_type = fields[2];
-            multipleOutputs.write(new Text(substituted_line), NullWritable.get(), location);
-            context.getCounter("RuleTypesInMapper", rule_type).increment(1);
-            context.getCounter(LineCounter.SUBSTITUTED).increment(1);
+        int lengthOfField = fields.length;
+        StringBuffer stringBuffer = new StringBuffer();
+        if (lengthOfField > 1 ) {
+            stringBuffer.append(fields[0]);
+            for (int i = 1; i < lengthOfField - 1; i++) {
+                stringBuffer.append("|");
+                stringBuffer.append(fields[i]);
+            }
         } else {
-            context.getCounter(MalformedRecord.FROM_MAPPER).increment(1);
+            context.getCounter(MalformedRecord.FROM_MAPPER);
         }
+        String substituted_line = stringBuffer.toString();
+        String locationDirectory = fields[lengthOfField - 1];
+
+        multipleOutputs.write(new Text(substituted_line), NullWritable.get(), locationDirectory + "/part");
+        context.getCounter("Locations", locationDirectory).increment(1);
+        context.getCounter(LineCounter.SUBSTITUTED).increment(1);
+
     }
 
     @Override

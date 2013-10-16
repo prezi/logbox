@@ -12,6 +12,7 @@ import java.io.FileReader;
 import java.io.Serializable;
 import java.security.InvalidParameterException;
 import java.util.*;
+import com.google.code.regexp.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 public class LogBoxConfiguration implements Serializable {
@@ -31,7 +32,16 @@ public class LogBoxConfiguration implements Serializable {
     @SerializedName("output_compression")
     String outputCompression = null;
 
+    @SerializedName("reducer_number")
+    private String reducerNumberStr;
+    @SerializedName("input_filename")
+    private String inputFilenameRegexStr;
+    @SerializedName("output_basename")
+    private String outputBasenameTemplate;
+
     private transient Log log = LogFactory.getLog(LogBoxConfiguration.class);
+
+    private transient Pattern outputBasenamePattern;
 
 
     public String getInputCompression() {
@@ -82,12 +92,25 @@ public class LogBoxConfiguration implements Serializable {
 
     public void setup(){
         compileRules();
+        try {
+            outputBasenamePattern = Pattern.compile(inputFilenameRegexStr);
+        }
+        catch (PatternSyntaxException e){
+            throw new PatternSyntaxException(
+                    "Invalid regex pattern in input filename regex" + ": " + e.getDescription(),
+                    e.getPattern(),
+                    e.getIndex()
+            );
+        }
+
     }
 
     public void compileInputBaseName(String basename) {
+        String outputBasename = outputBasenamePattern.matcher(basename).replaceAll(outputBasenameTemplate);
+        log.info("Using basename: " + outputBasename);
         for (CategoryConfiguration c : categoryConfigurations){
             for (Rule r : c.getRules()){
-                r.setOutputLocationTemplate(r.getOutputLocationTemplate().replace("${input_basename}",basename));
+                r.setOutputLocationTemplate(r.getOutputLocationTemplate().replace("${input_basename}",outputBasename));
             }
         }
     }
@@ -240,5 +263,29 @@ public class LogBoxConfiguration implements Serializable {
 
     public String getTemporalFilePrefix() {
         return this.outputLocationBase + "/tmp/";
+    }
+
+    public String getReducerNumberStr() {
+        return reducerNumberStr;
+    }
+
+    public void setReducerNumberStr(String reducerNumberStr) {
+        this.reducerNumberStr = reducerNumberStr;
+    }
+
+    public String getInputFilenameRegexStr() {
+        return inputFilenameRegexStr;
+    }
+
+    public void setInputFilenameRegexStr(String inputFilenameRegexStr) {
+        this.inputFilenameRegexStr = inputFilenameRegexStr;
+    }
+
+    public String getOutputBasenameTemplate() {
+        return outputBasenameTemplate;
+    }
+
+    public void setOutputBasenameTemplate(String outputBasenameTemplate) {
+        this.outputBasenameTemplate = outputBasenameTemplate;
     }
 }

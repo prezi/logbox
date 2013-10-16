@@ -47,7 +47,7 @@ public class SubstituteLineMapper extends Mapper<LongWritable, Text, Text, NullW
         } catch (Exception e) {
             throw new IOException(e.getMessage());
         }
-        log.info("Processing input path " + inputPath + ", using basename " + inputBaseName);
+        log.info("Processing input path " + inputPath + ", filename " + inputBaseName);
         config.compileInputBaseName(inputBaseName);
     }
 
@@ -58,19 +58,18 @@ public class SubstituteLineMapper extends Mapper<LongWritable, Text, Text, NullW
             return;
         }
 
-        //TODO: Regex match on input location, regex -> glob
         for (CategoryConfiguration c : config.getCategoryConfigurations()) {
             if (c.matches(inputPath, context.getConfiguration().get("date_glob"))) {
                 for (Rule r : c.getRules()) {
                     if (r.matches(line)) {
-                        String locationPrefix = r.getSubstitutedOutputLocation(line);
-                        outputPaths.add(locationPrefix);
+                        String locationDirectory = r.getSubstitutedOutputLocation(line);
+                        outputPaths.add(locationDirectory);
 
-                        Text lineAndLocation = new Text(r.getSubstitutedLine(line) + "|" + locationPrefix + "/part" + "|" + r.getName());
+                        Text lineAndLocation = new Text(r.getSubstitutedLine(line) + "|" + locationDirectory);
                         context.write(lineAndLocation, NullWritable.get());
                         context.getCounter(LineCounter.EMITTED_IN_MAPPER).increment(1);
                     } else {
-                        context.getCounter(LineCounter.OMITTED_IN_MAPPER).increment(1);
+                        context.getCounter(LineCounter.IGNORED_IN_MAPPER).increment(1);
                     }
                 }
             }
@@ -84,7 +83,6 @@ public class SubstituteLineMapper extends Mapper<LongWritable, Text, Text, NullW
         URI uri = URI.create(temporalFilePrefix);
         FileSystem fs = FileSystem.get(uri, context.getConfiguration());
         try {
-
             String uuid = UUID.randomUUID().toString();
             filename = temporalFilePrefix + "temp-" + uuid;
             FSDataOutputStream out = fs.create(new Path(filename));
@@ -92,7 +90,6 @@ public class SubstituteLineMapper extends Mapper<LongWritable, Text, Text, NullW
                 out.writeBytes(path + '\n');
             }
             out.close();
-
         } catch (IOException e) {
             System.out.println("Problem with: " + filename);
             e.printStackTrace();

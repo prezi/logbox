@@ -31,6 +31,7 @@ import java.util.ArrayList;
 public class LogBox extends Configured implements Tool {
     private static Log log = LogFactory.getLog(LogBox.class);
     private ExecutionContext executionContext;
+    final private int DEFAULT_NUMBER_OF_REDUCERS = 20;
 
 
     public LogBox(ExecutionContext c) {
@@ -64,8 +65,13 @@ public class LogBox extends Configured implements Tool {
         job.setOutputFormatClass(OverwriteOutputDirTextOutputFormat.class);
 
         // TODO ez jo itt?
-        job.setNumReduceTasks(39);
+        int reducerNum = Integer.parseInt(executionContext.getConfig().getReducerNumberStr());
 
+        if (reducerNum != 0) {
+            job.setNumReduceTasks(reducerNum);
+        } else {
+            job.setNumReduceTasks(DEFAULT_NUMBER_OF_REDUCERS);
+        }
         FileOutputFormat.setCompressOutput(job, false);
 
         String inputLocationPrefix = executionContext.getConfig().getInputLocationPrefix();
@@ -89,23 +95,6 @@ public class LogBox extends Configured implements Tool {
         return job;
     }
 
-    void printCounters(Job job) throws IOException {
-        Counters counters = job.getCounters();
-        long duplicates = counters.findCounter(LineCounter.EMITTED_IN_MAPPER).getValue()
-                - counters.findCounter(LineCounter.SUBSTITUTED).getValue();
-        System.out.println("Number of lines read by mappers: " + counters.findCounter(Task.Counter.MAP_INPUT_RECORDS).getValue() );
-        System.out.println("Number of unchanged lines: " + counters.findCounter(LineCounter.OMITTED_IN_MAPPER).getValue());
-        System.out.println("Number of lines written by reducers: " + counters.findCounter(LineCounter.SUBSTITUTED).getValue());
-        System.out.println("Number of duplicates (filtered out by reducer) : " + duplicates);
-        System.out.println("Number of malformed records from mapper: " + counters.findCounter(MalformedRecord.FROM_MAPPER).getValue());
-        System.out.println("Number of input files: " + counters.findCounter(FileCounter.INPUT_FILES).getValue());
-
-        ArrayList<String> ruleNames = ruleNames();
-        for (String ruleName : ruleNames) {
-            System.out.println("Number of records from rule type " + ruleName + ": " + counters.findCounter("RuleTypesInMapper", ruleName).getValue());
-        }
-    }
-
     @Override
     public int run(String[] strings) throws Exception {
 
@@ -123,11 +112,13 @@ public class LogBox extends Configured implements Tool {
             e.printStackTrace();
         }
 
+        /*
         try {
             printCounters(job);
         } catch (IOException e){
             e.printStackTrace();
         }
+        */
         return 0;
     }
 

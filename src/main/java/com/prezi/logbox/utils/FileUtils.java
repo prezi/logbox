@@ -16,7 +16,22 @@ public class FileUtils {
         if (!m.matches()){
             throw new Exception(String.format("Can't calculate basename for file: %s, pattern: %s", fileName, baseNamePattern));
         }
+        /*
+        // delete everything after the last _
+        int position = 0;
+        int last_userscore = m.group(1).length();
+        System.out.println("#####    " + m.group(1));
+        while (position != -1) {
+            position = m.group(1).indexOf("_", position + 1);
+            if (position != -1) {
+                last_userscore = position;
+            }
+            System.out.println(position);
+        }
+        System.out.println("#####    " +m.group(1).substring(0, last_userscore));
 
+        return m.group(1).substring(0, last_userscore);
+        */
         return m.group(1);
     }
 

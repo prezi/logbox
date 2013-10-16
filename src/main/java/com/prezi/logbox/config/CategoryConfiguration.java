@@ -10,8 +10,13 @@ public class CategoryConfiguration {
     private LinkedList<Rule> rules;
     private transient Pattern regexPattern;
 
+
     @SerializedName("input_glob")
     private String inputGlob;
+    @SerializedName("input_filename_template")
+    private String inputFilenameTemplateStr;
+    @SerializedName("input_basename")
+    private String inputBasename;
 
     public void setInputGlob(String inputGlob) {
         this.inputGlob = inputGlob;
@@ -50,4 +55,19 @@ public class CategoryConfiguration {
         return  regexPattern.matcher(filename).find();
     }
 
+    public String getInputFilenameTemplateStr() {
+        return inputFilenameTemplateStr;
+    }
+
+    public void setInputFilenameTemplateStr(String inputFilenameTemplateStr) {
+        this.inputFilenameTemplateStr = inputFilenameTemplateStr;
+    }
+
+    public String getInputBasename() {
+        return inputBasename;
+    }
+
+    public void setInputBasename(String inputBasename) {
+        this.inputBasename = inputBasename;
+    }
 }
