@@ -2,5 +2,6 @@ package com.prezi.logbox.mapreduce;
 
 
 public enum MalformedRecord {
-    FROM_MAPPER();
+    TOO_LONG_LINES,
+    FROM_MAPPER
 }

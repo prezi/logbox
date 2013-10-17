@@ -34,10 +34,15 @@ public class LogBoxConfiguration implements Serializable {
 
     @SerializedName("reducer_number")
     private String reducerNumberStr;
+
     @SerializedName("input_filename")
     private String inputFilenameRegexStr;
+
     @SerializedName("output_basename")
     private String outputBasenameTemplate;
+
+    @SerializedName("max_line_length")
+    private String maxLineLength;
 
     private transient Log log = LogFactory.getLog(LogBoxConfiguration.class);
 
@@ -287,5 +292,13 @@ public class LogBoxConfiguration implements Serializable {
 
     public void setOutputBasenameTemplate(String outputBasenameTemplate) {
         this.outputBasenameTemplate = outputBasenameTemplate;
+    }
+
+    public int getMaxLineLength() {
+        return Integer.parseInt(maxLineLength);
+    }
+
+    public void setMaxLineLength(String maxLineLength) {
+        this.maxLineLength = maxLineLength;
     }
 }

@@ -19,6 +19,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.UUID;
 
@@ -30,12 +31,15 @@ public class SubstituteLineMapper extends Mapper<LongWritable, Text, Text, NullW
     private HashSet<String> outputPaths;
     private String temporalFilePrefix;
     private static Log log = LogFactory.getLog(HadoopExecutor.class);
+    private ArrayList<CategoryConfiguration> categories;
+    private int maxLineLength;
 
     @Override
     protected void setup(Context context)
             throws IOException, InterruptedException {
 
         outputPaths = new HashSet<String>();
+        categories = new ArrayList<CategoryConfiguration>();
         inputPath = ((FileSplit) context.getInputSplit()).getPath().toString();
         context.getCounter(FileCounter.INPUT_FILES).increment(1);
         String configJSON = context.getConfiguration().get("config.json");
@@ -49,6 +53,15 @@ public class SubstituteLineMapper extends Mapper<LongWritable, Text, Text, NullW
         }
         log.info("Processing input path " + inputPath + ", filename " + inputBaseName);
         config.compileInputBaseName(inputBaseName);
+        for (CategoryConfiguration c : config.getCategoryConfigurations()) {
+            if (c.matches(inputPath, context.getConfiguration().get("date_glob"))) {
+                log.info("Matching category: " + c.getName());
+                categories.add(c);
+            }
+        }
+
+        log.info("For input " + inputPath + " " + categories.size() + " matching categories were found.");
+        maxLineLength = config.getMaxLineLength();
     }
 
     @Override
@@ -58,19 +71,21 @@ public class SubstituteLineMapper extends Mapper<LongWritable, Text, Text, NullW
             return;
         }
 
-        for (CategoryConfiguration c : config.getCategoryConfigurations()) {
-            if (c.matches(inputPath, context.getConfiguration().get("date_glob"))) {
-                for (Rule r : c.getRules()) {
-                    if (r.matches(line)) {
-                        String locationDirectory = r.getSubstitutedOutputLocation(line);
-                        outputPaths.add(locationDirectory);
+        if (line.length() > maxLineLength) {
+            context.getCounter(MalformedRecord.TOO_LONG_LINES);
+            return;
+        }
 
-                        Text lineAndLocation = new Text(r.getSubstitutedLine(line) + "|" + locationDirectory);
-                        context.write(lineAndLocation, NullWritable.get());
-                        context.getCounter(LineCounter.EMITTED_IN_MAPPER).increment(1);
-                    } else {
-                        context.getCounter(LineCounter.IGNORED_IN_MAPPER).increment(1);
-                    }
+        for (CategoryConfiguration c : categories) {
+            for (Rule r : c.getRules()) {
+                if (r.matches(line)) {
+                    String locationDirectory = r.getSubstitutedOutputLocation(line);
+                    outputPaths.add(locationDirectory);
+                    Text lineAndLocation = new Text(r.getSubstitutedLine(line) + "|" + locationDirectory);
+                    context.write(lineAndLocation, NullWritable.get());
+                    context.getCounter(LineCounter.EMITTED_IN_MAPPER).increment(1);
+                } else {
+                    context.getCounter(LineCounter.IGNORED_IN_MAPPER).increment(1);
                 }
             }
         }
