@@ -38,7 +38,7 @@ public class LogBoxConfiguration implements Serializable {
     @SerializedName("input_filename")
     private String inputFilenameRegexStr;
 
-    @SerializedName("output_basename")
+    @SerializedName("output_name_template")
     private String outputBasenameTemplate;
 
     @SerializedName("max_line_length")

@@ -1,13 +1,12 @@
 package com.prezi.logbox.mapreduce;
 
 import com.hadoop.compression.lzo.LzopCodec;
-import com.prezi.hadoop.OverwriteOutputDirTextOutputFormat;
-import com.prezi.logbox.executor.HadoopExecutor;
+import com.hadoop.mapreduce.LzoTextInputFormat;
 import com.prezi.hadoop.IndexFilter;
+import com.prezi.hadoop.OverwriteOutputDirTextOutputFormat;
 import com.prezi.logbox.config.CategoryConfiguration;
 import com.prezi.logbox.config.ExecutionContext;
-import com.prezi.logbox.config.LogBoxConfiguration;
-import com.prezi.logbox.config.Rule;
+import com.prezi.logbox.executor.HadoopExecutor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -15,8 +14,6 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.Task;
-import org.apache.hadoop.mapreduce.Counters;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
@@ -25,7 +22,6 @@ import org.apache.hadoop.mapreduce.lib.output.LazyOutputFormat;
 import org.apache.hadoop.util.Tool;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 
 public class LogBox extends Configured implements Tool {
@@ -33,20 +29,8 @@ public class LogBox extends Configured implements Tool {
     private ExecutionContext executionContext;
     final private int DEFAULT_NUMBER_OF_REDUCERS = 20;
 
-
     public LogBox(ExecutionContext c) {
         this.executionContext = c;
-    }
-
-    private ArrayList<String> ruleNames() {
-        ArrayList<String> ruleNames = new ArrayList<String>();
-        LogBoxConfiguration logBoxConfiguration = this.executionContext.getConfig();
-        for (CategoryConfiguration c : logBoxConfiguration.getCategoryConfigurations()) {
-            for (Rule r : c.getRules()) {
-                ruleNames.add(r.getName());
-            }
-        }
-        return ruleNames;
     }
 
     private Job createJob(Configuration conf) throws IOException {
@@ -61,10 +45,14 @@ public class LogBox extends Configured implements Tool {
 
         job.setJarByClass(HadoopExecutor.class);
 
-        job.setInputFormatClass(TextInputFormat.class);
+        if (executionContext.getConfig().getInputCompression().equals("lzo")) {
+            job.setInputFormatClass(LzoTextInputFormat.class);
+        } else {
+            job.setInputFormatClass(TextInputFormat.class);
+        }
         job.setOutputFormatClass(OverwriteOutputDirTextOutputFormat.class);
 
-        // TODO ez jo itt?
+
         int reducerNum = Integer.parseInt(executionContext.getConfig().getReducerNumberStr());
 
         if (reducerNum != 0) {
@@ -85,7 +73,6 @@ public class LogBox extends Configured implements Tool {
 
         if ( executionContext.getConfig().getOutputCompression().equals("lzo")){
             FileOutputFormat.setCompressOutput(job, true);
-
             FileOutputFormat.setOutputCompressorClass(job, LzopCodec.class);
         }
 
@@ -112,13 +99,6 @@ public class LogBox extends Configured implements Tool {
             e.printStackTrace();
         }
 
-        /*
-        try {
-            printCounters(job);
-        } catch (IOException e){
-            e.printStackTrace();
-        }
-        */
         return 0;
     }
 

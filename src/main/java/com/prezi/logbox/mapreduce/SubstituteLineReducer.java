@@ -12,6 +12,7 @@ public class SubstituteLineReducer  extends Reducer<Text, NullWritable, Text, Nu
 
     @Override
     protected void setup(Context context) throws IOException, InterruptedException {
+        // System.out.println("reducer setup: " + context.getTaskAttemptID().getTaskID().getId());
         multipleOutputs = new MultipleOutputs<Text, NullWritable>(context);
     }
 

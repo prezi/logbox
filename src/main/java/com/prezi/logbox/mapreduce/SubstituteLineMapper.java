@@ -41,7 +41,6 @@ public class SubstituteLineMapper extends Mapper<LongWritable, Text, Text, NullW
         outputPaths = new HashSet<String>();
         categories = new ArrayList<CategoryConfiguration>();
         inputPath = ((FileSplit) context.getInputSplit()).getPath().toString();
-        context.getCounter(FileCounter.INPUT_FILES).increment(1);
         String configJSON = context.getConfiguration().get("config.json");
         config = LogBoxConfiguration.fromConfig(configJSON);
         temporalFilePrefix = config.getTemporalFilePrefix();
@@ -94,19 +93,21 @@ public class SubstituteLineMapper extends Mapper<LongWritable, Text, Text, NullW
     @Override
     protected void cleanup(Context context)
             throws IOException, InterruptedException {
-        String filename ="";
         URI uri = URI.create(temporalFilePrefix);
         FileSystem fs = FileSystem.get(uri, context.getConfiguration());
         try {
             String uuid = UUID.randomUUID().toString();
-            filename = temporalFilePrefix + "temp-" + uuid;
+            String filename = temporalFilePrefix + "temp-" + uuid;
             FSDataOutputStream out = fs.create(new Path(filename));
-            for (String path : outputPaths) {
-                out.writeBytes(path + '\n');
+            for (String directoryPath : outputPaths) {
+                Path outPath = new Path(config.getOutputLocationBase() + directoryPath);
+                out.writeBytes(directoryPath + '\n');
+                if (fs.exists(outPath)) {
+                    fs.delete(outPath, true);
+                }
             }
             out.close();
         } catch (IOException e) {
-            System.out.println("Problem with: " + filename);
             e.printStackTrace();
         }
     }
