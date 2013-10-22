@@ -1,0 +1,37 @@
+{
+    "categories": [
+        {
+            "input_glob": "example-${date_glob}_*",
+            "name": "example_category",
+            "rules": [
+                {
+                    "name": "registration",
+                    "description": "Separate registrations by source",
+
+                    "match": "^(?<date>20[0-9\\-]{8}) (?<time>[0-9:]{8}) (?<appserver>[a-z\\-0-9]+) registration userid=(?<userid>[0-9]+) source=(?<source>\\w+)$",
+                    "output_format": "${date} ${time} ${userid} ${source}",
+                    "output_location": "registration/${date}/${input_basename}"
+                },
+                {
+                    "name": "payment",
+                    "description": "Separate payment events",
+
+                    "match": "^(?<date>20[0-9\\-]{8}) (?<time>[0-9:]{8}) (?<appserver>[a-z\\-0-9]+) payment_event:[0-9]+ userid=(?<userid>[0-9]+) (?<license>\\w+) \\$(?<amount>[0-9\\.]+)$",
+                    "output_format": "${date} ${time} ${userid} ${license} ${amount}",
+                    "output_location": "payment/${date}/${input_basename}"
+                }
+            ]
+        }
+    ],
+    "max_line_length" : "100000",
+    "reducer_number": "40",
+ 
+    "input_filename" : "^(?<name>.*)\\-(?<date>20[0-9\\-]{8})_(?<hour>000[0-2][0-9])$",
+    "output_name_template" : "${name}-${date}",
+
+    "input_compression": "lzo",
+    "input_location_prefix": "s3://example-logs/",
+ 
+    "output_compression": "lzo",
+    "output_location": "s3://example-logs/logbox/"
+}

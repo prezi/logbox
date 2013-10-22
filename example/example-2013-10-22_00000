@@ -1,0 +1,6 @@
+2013-10-22 12:12:12 app321 registration userid=12345 source=direct
+2013-10-22 12:12:13 app456 payment_event:321 userid=34567 ENJOY $59.00
+2013-10-22 12:12:14 app567 some dummy event we don't care about right now
+2013-10-22 12:12:14 app567 so simply leave it at the source log
+2013-10-22 12:12:13 app456 payment_event:443 userid=12345 PRO $159.00
+2013-10-22 12:12:13 app456 registration userid=23456 source=adwords
