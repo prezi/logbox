@@ -234,6 +234,9 @@ public class LogBoxConfiguration implements Serializable {
                 } else {
                     // Check and add individual rule filters, if necessary
                     CategoryConfiguration newCategoryConfiguration = new CategoryConfiguration(ruleCategories.getName());
+                    newCategoryConfiguration.setInputBasename(ruleCategories.getInputBasename());
+                    newCategoryConfiguration.setInputFilenameTemplateStr(ruleCategories.getInputFilenameTemplateStr());
+                    newCategoryConfiguration.setInputGlob(ruleCategories.getInputGlob());
 
                     for (Rule rule : ruleCategories.getRules()) {
                         String canonicalRuleName = ruleCategories.getName() + "." + rule.getName();
