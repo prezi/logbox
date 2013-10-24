@@ -1,0 +1,356 @@
+{
+  "categories": [
+    {
+      "input_glob": "braintree/braintree-${date_glob}*",
+      "name": "braintree",
+      "rules": [
+        {
+          "description": "Simply sorts Braintree logs and puts it into place",
+          "match": "^(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<timeHour>[0-9]{2}):(?<timeMin>[0-9]{2})(?<rest>.*)$",
+          "name": "braintree",
+          "output_format": "${date} ${timeHour}:${timeMin}${rest}",
+          "output_location": "braintree/${date}/${input_basename}",
+          "started_at": "2012-09-11"
+        }
+      ]
+    },
+    {
+      "input_glob": "growth/growth-${date_glob}*",
+      "name": "growth",
+      "rules": [
+        {
+          "description": "Simply sorts growth logs and puts it into place",
+          "match": "^(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<timeHour>[0-9]{2}):(?<timeMin>[0-9]{2})(?:\\S+) (?<otherInfo>((\\S+\\s){6}))(?<source>\\w+) (?<rest>.*)$",
+          "name": "growth",
+          "output_format": "${date} ${timeHour}:${timeMin} ${otherInfo}${source} ${rest}",
+          "output_location": "growth/${date}/${input_basename}",
+          "started_at": "2013-05-30"
+        }
+      ]
+    },
+    {
+      "input_glob": "conversionservice/conversionservice-${date_glob}*",
+      "name": "conversionservice",
+      "rules": [
+        {
+          "description": "conversionservice sorted log",
+          "match": "^(?<wholeRow>(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]).*)$",
+          "name": "conversionservice",
+          "output_format": "${wholeRow}",
+          "output_location": "conversionservice/${date}/${input_basename}",
+          "started_at": "2013-05-14"
+        }
+      ]
+    },
+    {
+      "input_glob": "extended_access/extended_access-${date_glob}*",
+      "name": "extended_access",
+      "rules": [
+        {
+          "description": "Filters extended access logs for new visitors and extracts date, cookie and url.",
+          "match": "^(?<date>\\S+) (\\S+) (\\S+) (\\S+) (\\S+) (\\S+) (\\S+) (?<responseCookie>\\S{6,}) (\\S+) None (\\S+) (\\S+) (?<absoluteUri>\\S+)(.*)",
+          "name": "first_time_visitors",
+          "output_format": "${date} ${responseCookie} ${absoluteUri}",
+          "output_location": "first_time_visitors/${date}/${input_basename}",
+          "started_at": "2013-04-27"
+        }
+      ]
+    },
+    {
+      "input_glob": "kpi/kpi-${date_glob}*",
+      "name": "kpi",
+      "rules": [
+        {
+          "description": "Simply sorts KPI and puts it into place",
+          "match": "^(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<timeHour>[0-9]{2}):(?<timeMin>[0-9]{2})(?<rest>.*)$",
+          "name": "kpi",
+          "output_format": "${date} ${timeHour}:${timeMin}${rest}",
+          "output_location": "kpi/${date}/${input_basename}",
+          "started_at": "2010-03-10"
+        },
+        {
+          "description": "Extract deleted users from kpi log",
+          "match": "^(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<time>[0-9]{2}:[0-9]{2}:.{6}) (?<hostname>[a-zA-Z0-9\\-\\._]+) kpi\\.event 14 (?<userId>[0-9]+)(?<rest>.*)$",
+          "name": "user_delete",
+          "output_format": "${date} ${time} ${userId}",
+          "output_location": "user_delete/${date}/${input_basename}",
+          "started_at": "2010-03-10"
+        },
+        {
+          "description": "Extract registered users from kpi log",
+          "match": "^(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<time>[0-9]{2}:[0-9]{2}:.{6}) (?<hostname>[a-zA-Z0-9\\-\\._]+) kpi\\.event 10 (?<userId>[0-9]+) (?<license>[0-9]+)(?<rest>.*)$",
+          "name": "user_registration",
+          "output_format": "${date} ${time} ${userId} ${license}",
+          "output_location": "user_registration/${date}/${input_basename}",
+          "started_at": "2010-03-10"
+        },
+        {
+          "description": "Extract license updates from kpi log",
+          "match": "^(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<time>[0-9]{2}:[0-9]{2}:.{6}) (?<hostname>[a-zA-Z0-9\\-\\._]+) kpi\\.event 11 (?<userId>[0-9]+) (?<oldlicense>[0-9]+) (?<newlicense>[0-9]+)(?<rest>.*)$",
+          "name": "license_update",
+          "output_format": "${date} ${time} ${userId} ${oldlicense} ${newlicense}",
+          "output_location": "license_update/${date}/${input_basename}",
+          "started_at": "2010-03-10"
+        },
+        {
+          "description": "Extract license cancellation from kpi log",
+          "match": "^(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<time>[0-9]{2}:[0-9]{2}:.{6}) (?<hostname>[a-zA-Z0-9\\-\\._]+) kpi\\.event 13 (?<userId>[0-9]+)(?<license>[0-9]+)(?<rest>.*)$",
+          "name": "cancel_license",
+          "output_format": "${date} ${time} ${userId} ${license}",
+          "output_location": "cancel_license/${date}/${input_basename}",
+          "started_at": "2010-03-10"
+        },
+        {
+          "description": "Extract prezi creates from kpi log",
+          "match": "^(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<time>[0-9]{2}:[0-9]{2}:.{6}) (?<hostname>[a-zA-Z0-9\\-\\._]+) kpi\\.event 2 (?<userId>[0-9]+) (?<preziId>[0-9]+)( *)(?<preziOid>[a-zA-Z0-9\\-_]*)( *)(?<is_instant>.?)( ?)$",
+          "name": "prezi_create",
+          "output_format": "${date} ${time} ${userId} ${preziId} ${preziOid} ${is_instant}",
+          "output_location": "prezi_create/${date}/${input_basename}",
+          "started_at": "2010-03-10"
+        },
+        {
+          "description": "Extract prezi loads from kpi log",
+          "match": "^(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<time>[0-9]{2}:[0-9]{2}:.{6}) (?<hostname>[a-zA-Z0-9\\-\\._]+) kpi\\.event 17 (?<userId>[0-9]+) (?<preziId>[0-9]+) (?<is_ipad>[0-1])(?<rest>.*)$",
+          "name": "prezi_load",
+          "output_format": "${date} ${time} ${userId} ${preziId}",
+          "output_location": "prezi_load/${date}/${input_basename}",
+          "started_at": "2010-03-10"
+        },
+        {
+          "description": "Extract prezi edits from kpi log",
+          "match": "^(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<time>[0-9]{2}:[0-9]{2}:.{6}) (?<hostname>[a-zA-Z0-9\\-\\._]+) kpi\\.event 3 (?<rest>.*)",
+          "name": "prezi_edit",
+          "output_format": "${date} ${time} ${rest}",
+          "output_location": "prezi_edit/${date}/${input_basename}",
+          "started_at": "2010-03-10"
+        },
+        {
+          "description": "Extract prezi reuses from kpi log",
+          "match": "^(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<time>[0-9]{2}:[0-9]{2}:.{6}) (?<hostname>[a-zA-Z0-9\\-\\._]+) kpi\\.event 4 (?<userId>[0-9]+) (?<oldPreziId>[0-9]+) (?<newPreziId>[0-9]+)( *)(?<oldPreziOid>[a-zA-Z0-9\\-_]*)( *)(?<newPreziOid>[a-zA-Z0-9\\-_]*)$",
+          "name": "prezi_reuse",
+          "output_format": "${date} ${time} ${userId} ${oldPreziId} ${newPreziId} ${oldPreziOid} ${newPreziOid}",
+          "output_location": "prezi_reuse/${date}/${input_basename}",
+          "started_at": "2010-03-10"
+        }
+      ]
+    },
+    {
+      "input_glob": "client/client-${date_glob}*",
+      "name": "client",
+      "rules": [
+        {
+          "description": "Sorts client log and puts it into place",
+          "match": "^(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<timeHour>[0-9]{2}):(?<timeMin>[0-9]{2})(?<rest>.*)$",
+          "name": "client",
+          "output_format": "${date} ${timeHour}:${timeMin}${rest}",
+          "output_location": "client/${date}/${input_basename}",
+          "started_at": "2010-11-09"
+        },
+        {
+          "description": "Extract desktop-related logs from client.log",
+          "match": "^(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<time>[0-9]{2}:[0-9]{2}:.{6}) (?<hostname>[a-zA-Z0-9\\-\\._]+) desktop (?<rest>.*)$",
+          "name": "client_desktop",
+          "output_format": "${date} ${time} ${hostname} desktop ${rest}",
+          "output_location": "client_desktop/${date}/${input_basename}",
+          "started_at": "2011-12-01"
+        },
+        {
+          "description": "PPT Import completed events from client log",
+          "match": "^(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<timeHour>[0-9]{2}):(?<timeMin>[0-9]{2}):(?<timeSec>.{6}) (?<hostname>[a-zA-Z0-9\\-\\._]+) (?<source>[a-zA-Z0-9\\.\\-\\_]+) (?<loglevel>[a-zA-Z]+) (?<client_date>[0-9\\-]+) (?<client_time>[0-9:,]+) (?<ip>[0-9\\.]+) (?<preziOid>[a-zA-Z0-9_\\-]+) (?<userId>[0-9]+) Feature ppt\\.conversion_completed .*$",
+          "name": "ppt_import",
+          "output_format": "${date} ${timeHour}:${timeMin}:${timeSec} ${client_date} ${client_time} ${source} ${ip} ${preziOid} ${userId}",
+          "output_location": "ppt_import/${date}/${input_basename}",
+          "started_at": "2012-03-10"
+        },
+        {
+          "description": "How much time was spent with active editing",
+          "match": "^(?<wholeRow>(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<timeHour>[0-9]{2}):(?<timeMin>[0-9]{2}):(?<timeSec>.{6}) (?<hostname>[a-zA-Z0-9\\-\\._]+) (?<source>[a-zA-Z0-9\\.\\-\\_]+) (?<loglevel>[a-zA-Z]+) (?<client_date>[0-9\\-]+) (?<client_time>[0-9:,]+) (?<ip>[0-9\\.]+) (?<preziOid>[a-zA-Z0-9_\\-]+) (?<userId>[0-9]+) active_time (?<rest>.*))$",
+          "name": "active_time",
+          "output_format": "${wholeRow}",
+          "output_location": "active_time/${date}/${input_basename}",
+          "started_at": "2013-02-01"
+        },
+        {
+          "description": "Feature logger events",
+          "match": "^(?<wholeRow>(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<timeHour>[0-9]{2}):(?<timeMin>[0-9]{2}):(?<timeSec>.{6}) (?<hostname>[a-zA-Z0-9\\-\\._]+) (?<source>[a-zA-Z0-9\\.\\-\\_]+) (?<loglevel>[a-zA-Z]+) (?<client_date>[0-9\\-]+) (?<client_time>[0-9:,]+) (?<ip>[0-9\\.]+) (?<preziOid>[a-zA-Z0-9_\\-]+) (?<userId>[0-9]+) Feature (?<rest>.*))$",
+          "name": "feature",
+          "output_format": "${wholeRow}",
+          "output_location": "feature/${date}/${input_basename}",
+          "started_at": "2013-03-01"
+        },
+        {
+          "description": "Template selection events from client log",
+          "match": "^(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<timeHour>[0-9]{2}):(?<timeMin>[0-9]{2}):(?<timeSec>.{6}) (?<hostname>[a-zA-Z0-9\\-\\._]+) (?<source>[a-zA-Z0-9\\.\\-\\_]+) (?<loglevel>[a-zA-Z]+) (?<client_date>[0-9\\-]+) (?<client_time>[0-9:,]+) (?<ip>[0-9\\.]+) (?<preziOid>[a-zA-Z0-9_\\-]+) (?<userId>[0-9]+) (com\\.prezi\\.editor\\.extensions\\.templates\\.TemplateInserterToolExt|com\\.prezi\\.template\\.NewTemplateInserterTool) template selected: (?<template_name>[0-9a-zA-Z_\\-]+)$",
+          "name": "template_selected",
+          "output_format": "${date} ${timeHour}:${timeMin}:${timeSec} ${client_date} ${client_time} ${source} ${ip} ${preziOid} ${userId} ${template_name}",
+          "output_location": "template_selected/${date}/${input_basename}",
+          "started_at": "2012-03-10"
+        },
+        {
+          "description": "Which words are corrected and to what word?",
+          "match": "^(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<time>[0-9]{2}:[0-9]{2}:.{6}) (?<hostname>[a-zA-Z0-9\\-\\._]+) (?<source>[a-zA-Z0-9\\.\\-\\_]+) (?<loglevel>[a-zA-Z]+) (?<client_date>[0-9\\-]+) (?<client_time>[0-9:,]+) (?<ip>[0-9\\.]+) (?<preziOid>[a-zA-Z0-9_\\-]+) (?<userId>[0-9]+) Feature spellcheck.corrected (?<wordFrom>[^ ]+) (?<wordTo>[^ ]+)$",
+          "name": "corrected_words",
+          "output_format": "${date} ${time} ${client_date} ${client_time} ${source} ${ip} ${preziOid} ${userId} ${wordFrom} ${wordTo}",
+          "output_location": "corrected_words/${date}/${input_basename}",
+          "started_at": "2012-04-07"
+        },
+        {
+          "description": "Copy Paste events from client log",
+          "match": "^(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<timeHour>[0-9]{2}):(?<timeMin>[0-9]{2}):(?<timeSec>.{6}) (?<hostname>[a-zA-Z0-9\\-\\._]+) (?<source>[a-zA-Z0-9\\.\\-\\_]+) (?<loglevel>[a-zA-Z]+) (?<client_date>[0-9\\-]+) (?<client_time>[0-9:,]+) (?<ip>[0-9\\.]+) (?<preziOid>[a-zA-Z0-9_\\-]+) (?<userId>[0-9]+) hu\\.kibu\\.zui\\.editor\\.io\\.MediaImporter PreziObjectPasted_from (?<source_oid>[0-9a-zA-Z_\\-]+) (?<object_count>[0-9]+)$",
+          "name": "copypaste",
+          "output_format": "${date} ${timeHour}:${timeMin}:${timeSec} ${client_date} ${client_time} ${source} ${ip} ${preziOid} ${userId} ${source_oid} ${object_count}",
+          "output_location": "copypaste/${date}/${input_basename}",
+          "started_at": "2012-07-25"
+        },
+        {
+          "description": "Extracts save_stat rows from client_log - old version",
+          "match": "^(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<timeHour>[0-9]{2}):(?<timeMin>[0-9]{2}):(?<timeSec>.{6}) (?<hostname>[a-zA-Z0-9\\-\\._]+) (?<source>[a-zA-Z0-9\\.\\-\\_]+) (?<loglevel>[a-zA-Z]+) (?<client_date>[0-9\\-]+) (?<client_time>[0-9:,]+) (?<ip>[0-9\\.]+) (?<preziOid>[a-zA-Z0-9_\\-]+) (?<userId>[0-9]+) save_stat (?<revision>[0-9]+) (?<num_objects>[0-9]+) (?<num_texts>[0-9]+) (?<num_frames>[0-9]+) (?<num_shapes>[0-9]+) (?<num_images>[0-9]+) (?<num_videos>[0-9]+) (?<num_youtubes>[0-9]+) (?<num_placeholders>[0-9]+) (?<num_bglayers>[0-9]+) (?<num_animations>[0-9]+) (?<path_length>[0-9]+) (?<num_clicks>[0-9]+) (?<num_keys>[0-9]+)$",
+          "name": "save_stat",
+          "output_format": "${date} ${timeHour}:${timeMin}:${timeSec} ${client_date} ${client_time} ${source} ${ip} ${preziOid} ${userId} ${revision} ${num_objects} ${num_texts} ${num_frames} ${num_shapes} ${num_images} ${num_videos} ${num_youtubes} ${num_placeholders} ${num_bglayers} ${num_animations} ${path_length} ${num_clicks} ${num_keys}",
+          "output_location": "save_stat/${date}/${input_basename}",
+          "started_at": "2012-07-27"
+        },
+        {
+          "description": "Extracts save_stat rows from client_log - new version",
+          "match": "^(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<timeHour>[0-9]{2}):(?<timeMin>[0-9]{2}):(?<timeSec>.{6}) (?<hostname>[a-zA-Z0-9\\-\\._]+) (?<source>[a-zA-Z0-9\\.\\-\\_]+) (?<loglevel>[a-zA-Z]+) (?<client_date>[0-9\\-]+) (?<client_time>[0-9:,]+) (?<ip>[0-9\\.]+) (?<preziOid>[a-zA-Z0-9_\\-]+) (?<userId>[0-9]+) save_stat (?<revision>[0-9]+) (?<num_objects>[0-9]+) (?<num_texts>[0-9]+) (?<num_frames>[0-9]+) (?<num_shapes>[0-9]+) (?<num_images>[0-9]+) (?<num_videos>[0-9]+) (?<num_youtubes>[0-9]+) (?<num_placeholders>[0-9]+) (?<num_bglayers>[0-9]+) (?<num_animations>[0-9]+) (?<path_length>[0-9]+) (?<num_clicks>[0-9]+) (?<num_keys>[0-9]+) (?<num_realtexts>[0-9]+) (?<num_dummytexts>[0-9]+)$",
+          "name": "save_stat",
+          "output_format": "${date} ${timeHour}:${timeMin}:${timeSec} ${client_date} ${client_time} ${source} ${ip} ${preziOid} ${userId} ${revision} ${num_objects} ${num_texts} ${num_frames} ${num_shapes} ${num_images} ${num_videos} ${num_youtubes} ${num_placeholders} ${num_bglayers} ${num_animations} ${path_length} ${num_clicks} ${num_keys} ${num_realtexts} ${num_dummytexts}",
+          "output_location": "save_stat/${date}/${input_basename}",
+          "started_at": "2012-07-27"
+        },
+        {
+          "description": "Extracts save_stat rows from client_log - with in_collab column",
+          "match": "^(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<timeHour>[0-9]{2}):(?<timeMin>[0-9]{2}):(?<timeSec>.{6}) (?<hostname>[a-zA-Z0-9\\-\\._]+) (?<source>[a-zA-Z0-9\\.\\-\\_]+) (?<loglevel>[a-zA-Z]+) (?<client_date>[0-9\\-]+) (?<client_time>[0-9:,]+) (?<ip>[0-9\\.]+) (?<preziOid>[a-zA-Z0-9_\\-]+) (?<userId>[0-9]+) save_stat (?<revision>[0-9]+) (?<num_objects>[0-9]+) (?<num_texts>[0-9]+) (?<num_frames>[0-9]+) (?<num_shapes>[0-9]+) (?<num_images>[0-9]+) (?<num_videos>[0-9]+) (?<num_youtubes>[0-9]+) (?<num_placeholders>[0-9]+) (?<num_bglayers>[0-9]+) (?<num_animations>[0-9]+) (?<path_length>[0-9]+) (?<num_clicks>[0-9]+) (?<num_keys>[0-9]+) (?<num_realtexts>[0-9]+) (?<num_dummytexts>[0-9]+) (?<is_collab>[0-1])$",
+          "name": "save_stat",
+          "output_format": "${date} ${timeHour}:${timeMin}:${timeSec} ${client_date} ${client_time} ${source} ${ip} ${preziOid} ${userId} ${revision} ${num_objects} ${num_texts} ${num_frames} ${num_shapes} ${num_images} ${num_videos} ${num_youtubes} ${num_placeholders} ${num_bglayers} ${num_animations} ${path_length} ${num_clicks} ${num_keys} ${num_realtexts} ${num_dummytexts} ${is_collab}",
+          "output_location": "save_stat/${date}/${input_basename}",
+          "started_at": "2012-03-29"
+        },
+
+        {
+          "description" : "Extracts save_stat rows from client_log - with in_collab column (two more fields)",
+          "match" : "^(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<timeHour>[0-9]{2}):(?<timeMin>[0-9]{2}):(?<timeSec>.{6}) (?<hostname>[a-zA-Z0-9\\-\\._]+) (?<source>[a-zA-Z0-9\\.\\-\\_]+) (?<loglevel>[a-zA-Z]+) (?<client_date>[0-9\\-]+) (?<client_time>[0-9:,]+) (?<ip>[0-9\\.]+) (?<preziOid>[a-zA-Z0-9_\\-]+) (?<userId>[0-9]+) save_stat (?<revision>[0-9]+) (?<num_objects>[0-9]+) (?<num_texts>[0-9]+) (?<num_frames>[0-9]+) (?<num_shapes>[0-9]+) (?<num_images>[0-9]+) (?<num_videos>[0-9]+) (?<num_youtubes>[0-9]+) (?<num_placeholders>[0-9]+) (?<num_bglayers>[0-9]+) (?<num_animations>[0-9]+) (?<path_length>[0-9]+) (?<num_clicks>[0-9]+) (?<num_keys>[0-9]+) (?<num_realtexts>[0-9]+) (?<num_dummytexts>[0-9]+) (?<is_collab>[0-1]) (?<num_usertexts>[0-9]+) (?<num_userimages>[0-9]+)$",
+          "name" : "save_stat",
+          "output_location" : "save_stat/${date}/${input_basename}",
+          "output_format" : "${date} ${timeHour}:${timeMin}:${timeSec} ${client_date} ${client_time} ${source} ${ip} ${preziOid} ${userId} ${revision} ${num_objects} ${num_texts}  ${num_frames} ${num_shapes} ${num_images} ${num_videos} ${num_youtubes} ${num_placeholders} ${num_bglayers} ${num_animations} ${path_length} ${num_clicks} ${num_keys} ${num_realtexts} ${num_dummytexts} ${is_collab} ${num_usertexts} ${num_userimages}",
+          "starts" : "2012-07-23"
+        },
+        {
+          "description": "Collects all view events",
+          "match": "^(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<timeHour>[0-9]{2}):(?<timeMin>[0-9]{2}):(?<timeSec>.{6}) [,:a-zA-Z0-9\\-\\._]+ (?<view_type>[,:a-zA-Z0-9\\-\\._]+) [,:a-zA-Z0-9\\-\\._]+ [,:a-zA-Z0-9\\-\\._]+ [,:a-zA-Z0-9\\-\\._]+ [,:a-zA-Z0-9\\-\\._]+ (?<oid>[,:a-zA-Z0-9\\-\\._]+) (?<userId>[0-9]+) [,:a-zA-Z0-9\\-\\._]+ [,:a-zA-Z0-9\\-\\._]+ [,:a-zA-Z0-9\\-\\._]+ [,:a-zA-Z0-9\\-\\._]+ stat_prezi_view (?<rest>.*)$",
+          "name": "views",
+          "output_format": "${date} ${timeHour}:${timeMin}:${timeSec} ${view_type} ${oid} ${userId}",
+          "output_location": "views/${date}/${input_basename}",
+          "started_at": "2012-07-18"
+        },
+        {
+          "description": "Collects all load events",
+          "match": "^(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<timeHour>[0-9]{2}):(?<timeMin>[0-9]{2}):(?<timeSec>.{6}) [,:a-zA-Z0-9\\-\\._]+ (?<view_type>[,:a-zA-Z0-9\\-\\._]+) [,:a-zA-Z0-9\\-\\._]+ [,:a-zA-Z0-9\\-\\._]+ [,:a-zA-Z0-9\\-\\._]+ [,:a-zA-Z0-9\\-\\._]+ (?<oid>[,:a-zA-Z0-9\\-\\._]+) (?<userId>[0-9]+) [,:a-zA-Z0-9\\-\\._]+ [,:a-zA-Z0-9\\-\\._]+ [,:a-zA-Z0-9\\-\\._]+ [,:a-zA-Z0-9\\-\\._]+ stat_loaded (?<audio>.+) (?<explore>(FromExplorePages|NotFromExplorePages))(?<rest>.*)$",
+          "name": "loads",
+          "output_format": "${date} ${timeHour}:${timeMin}:${timeSec} ${view_type} ${oid} ${userId} ${explore}",
+          "output_location": "loads/${date}/${input_basename}",
+          "started_at": "2013-05-27"
+        },
+        {
+          "description": "Extracts personal_library (aka object library, aka my objects) rows from client log",
+          "match": "^(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<rest1>.*) Feature personal_library(?<rest2>.*)$",
+          "name": "personal_library",
+          "output_format": "${date} ${rest1} Feature personal_library${rest2}",
+          "output_location": "personal_library/${date}/${input_basename}",
+          "started_at": "2012-11-14"
+        },
+        {
+          "description": "Extracts only the errors from the client log",
+          "match": "^(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<time>[0-9]{2}:[0-9]{2}:.{6}) (?<hostname>[a-zA-Z0-9\\-\\._]+) (?<source>[a-zA-Z0-9\\.\\-\\_]+) ERROR (?<rest>.*)$",
+          "name": "client_error",
+          "output_format": "${date} ${time} ${hostname} ${source} ${rest}",
+          "output_location": "client_error/${date}/${input_basename}",
+          "started_at": "2013-04-24"
+        },
+        {
+          "description": "Extract snippet thumbnail upload related events",
+          "match": "^(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<rest>.* (Feature client_snippet_thumbnail|com.prezi.services.HttpSnippetThumbnailerService).*)$",
+          "name": "thumbnail_upload",
+          "output_format": "${date} ${rest}",
+          "output_location": "thumbnail_upload/${date}/${input_basename}",
+          "started_at": "2013-06-06"
+        },
+
+        {
+          "name" : "navigation_walkthrough_present_all",
+          "description" : "A4 milestone raw data",
+          "match" : "^(?<whole_row>(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<time_hour>[0-9]{2}):(?<time_min>[0-9]{2}):(?<time_sec>.{6}) (?<hostname>[a-zA-Z0-9\\-\\._]+) (?<source>landing|editor) (?<loglevel>[a-zA-Z]+) (?<client_date>[0-9\\-]+) (?<client_time>[0-9:,]+) (?<ip>[0-9\\.]+) (?<prezi_oid>[a-zA-Z0-9_\\-]+) (?<user_id>[0-9]+) navigation_walkthrough (?<steps>[0-9]+) true true)$",
+          "output_location" : "navigation_walkthrough_present_all/${date}/${input_basename}",
+          "output_format" : "${date} ${time_hour}:${time_min}:${time_sec} ${client_date} ${client_time} ${source} ${ip} ${prezi_oid} ${user_id} ${steps}",
+          "started_at" : "2013-07-24"
+        }
+      ]
+    },
+    {
+      "input_glob": "meeting_kpi/meeting_kpi-${date_glob}*",
+      "name": "meeting_kpi",
+      "rules": [
+        {
+          "description": "Sorts and cleans meeting kpi log",
+          "match": "^( ?)(?<hostname>[0-9a-z\\.\\-_]+) meeting_kpi (?<date>[0-9\\-]{10}) (?<timehour>[0-9]{2}):(?<timemin>[0-9]{2}):(?<timesec>[0-9]{2},[0-9]{3}) (?<rest>.*)$",
+          "name": "meeting_kpi",
+          "output_format": "${date} ${timehour}:${timemin}:${timesec} ${hostname} meeting_kpi ${rest}",
+          "output_location": "meeting_kpi/${date}/${input_basename}",
+          "started_at": "2011-12-02"
+        }
+      ]
+    },
+    {
+      "input_glob": "prezi/prezi-${date_glob}*",
+      "name": "prezi",
+      "rules": [
+        {
+          "description": "Sorts prezi log and puts it into place",
+          "match": "^(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<timeHour>[0-9]{2}):(?<timeMin>[0-9]{2})(?<rest>.*)$",
+          "name": "prezi",
+          "output_format": "${date} ${timeHour}:${timeMin}${rest}",
+          "output_location": "prezi/${date}/${input_basename}",
+          "started_at": "2010-11-15"
+        },
+        {
+          "description": "Collects loglines related to the event when the user copies her own prezi.",
+          "match": "^(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<rest1>.*) usage INFO (?<codeline>[0-9]*):presentations_duplicate (?<rest2>.*)$",
+          "name": "duplication",
+          "output_format": "${date} ${rest1} usage INFO ${codeline}:presentations_duplicate ${rest2}",
+          "output_location": "duplication/${date}/${input_basename}",
+          "started_at": "2012-01-01"
+        }, 
+        {
+          "name" : "feedback",
+          "description" : "Collects all loglines that are related to the NPS survey that is being send every night/45day after registrations.",
+          "match" : "^(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<time>[0-9]{2}:[0-9]{2})(?:\\S+) (?:\\S+) feedback (?<rest>.*)$",
+          "output_location" : "feedback/${date}/${input_basename}",
+          "output_format" : "${date} ${time} feedback ${rest}",
+          "starts" : "2013-07-30"
+        }
+      ]
+    },
+    {
+      "input_glob": "ipad-client/ipad-client-${date_glob}*",
+      "name": "ipad-client",
+      "rules": [
+        {
+          "description": "Covert ipad actions into feature_log style rows",
+          "match": "^(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9]) (?<time>[0-9:,]{12}) (?<host>[^ ]+) (?<source>[^ ]+) (?<level>[^ ]+) \\[(?<client_date>[^ ]+) (?<client_time>[^ ]+)\\] (?<ip>[^ ]+) (?<preziOid>[^ ]+) (?<userId>[^ ]+) (?<version>[^ ]+) (?<hw_version>[^ ]+) (?<ios_version>[^ ]+) (?<action>[^ ]+) (?<rest>.*)$",
+          "name": "feature",
+          "output_format": "${date} ${time} ${host} ${source} ${level} ${client_date} ${client_time} ${ip} ${preziOid} ${userId} Feature ios.${action} ${rest}",
+          "output_location": "feature/${date}/${input_basename}",
+          "started_at": "2013-04-01"
+        }
+      ]
+    }
+  ],
+  "max_line_length" : "100000",
+  "input_filename" : "^(?<name>.*)\\-(?<date>201[0-9]\\-[01][0-9]\\-[0-3][0-9])_(?<hour>000[0-2][0-9])$",
+  "output_name_template" : "${name}-${date}",
+  "reducer_number": "40",
+  "input_compression": "lzo",
+  "input_location_prefix": "s3://dataservice-logs/",
+  "output_compression": "lzo",
+  "output_location": "s3://dataservice-logs/sorted_log/"
+}
