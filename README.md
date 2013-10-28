@@ -1,49 +1,28 @@
 #Logbox
 
-## What is this?
+Logbox is an efficient hadoop-based tool for tidying up huge amount of unstructured logs. 
+With logbox your logs lines can be reshaped and stored into several buckets in a single execution.
 
-Logbox is an efficient hadoop-based tool for processing huge amount of unstructured logs. 
-With logbox your logs can be sorted into several buckets, each described with a regural expression.
+## What, exactly?
 
-## Install LogBox
-
-1. Checkout this project
-2. Download the dependencies and build the jar file containing all the dependencies:
-    
-     `mvn clean compile assembly:single`
-
-You will find your jar file here: 
-
-    target/logbox-1.0-SNAPSHOT-jar-with-dependencies.jar
-
-## Run LogBox
-
-Logbox has two execution modes
-
-1. Local test
-2. Production execution
-
-### Test mode:
- 
-*Take a look at the [examples](https://github.com/prezi/logbox/tree/master/example).*
-
-In this execution mode LogBox runs locally (without hadoop) and simulates the execution of the job. It prints to stdout the files and the lines logbox would emit data into. 
-This way you can check wether your regexps are correct and you specified the input and output paths correctly.
-
-Assuming that you have the following [input file](https://github.com/prezi/logbox/blob/master/example/example-2013-10-22_00000):
+Imagine you have a huge unstructured log file at *s3://example-logs/example-2013-10-22_00012.lzo* a chuck of which looks like this:
 
 ```
 2013-10-22 12:12:12 app321 registration userid=12345 source=direct
 2013-10-22 12:12:13 app456 payment_event:321 userid=34567 ENJOY $59.00
 2013-10-22 12:12:14 app567 some dummy event we don't care about right now
-2013-10-22 12:12:14 app567 so simply leave it at the source log
+2013-10-22 12:12:14 app567 so simply leave it here
 2013-10-22 12:12:13 app456 payment_event:443 userid=12345 PRO $159.00
 2013-10-22 12:12:13 app456 registration userid=23456 source=adwords
 ```
 
-You would like to separate registrations and payments from this file into the `registration` and `payment` folder.
+You want to clean this up and have two separate log files, one for the *payment records*, which will be
+stored in *s3://example-logs/logbox/registration*
+and the other one for *registrations*, which will be sored at  *s3://example-logs/logbox/payment*. 
+Also, you want log lines to be put into a directory nominated by the date the line is associated with.
+Finally, you want to get rid of the clutter and transform these lines into a better shape.
 
-In the [config.json](https://github.com/prezi/logbox/blob/master/example/config.json) file you can specify the rules that will be used to extract the required data:
+Let's look at this configuration file (more explanation below):
 
 ```javascript
 {
@@ -84,6 +63,56 @@ In the [config.json](https://github.com/prezi/logbox/blob/master/example/config.
     "output_location": "s3://example-logs/logbox/"
 }
 ```
+
+After executing logbox, you will have 2 new directories with the following content:
+
+ 1. ```s3://example-logs/logbox/registration/2013-10-22/example-2013-10-22```
+
+    2013-10-22 12:12:12 12345 direct
+    2013-10-22 12:12:13 23456 adwords
+
+
+ 2. ```s3://example-logs/logbox/payment/2013-10-22/example-2013-10-22```
+
+    2013-10-22 12:12:13 34567 ENJOY 59.00
+    2013-10-22 12:12:13 12345 PRO 159.00
+
+
+When you execute logbox, this is what happens:
+
+1. You will have two log 
+
+## Install LogBox
+
+1. Checkout this project
+2. Download the dependencies and build the jar file containing all the dependencies:
+    
+     `mvn clean compile assembly:single`
+
+You will find your jar file here: 
+
+    target/logbox-1.0-SNAPSHOT-jar-with-dependencies.jar
+
+## Run LogBox
+
+Logbox has two execution modes
+
+1. Local test
+2. Production execution
+
+### Test mode:
+ 
+*Take a look at the [examples](https://github.com/prezi/logbox/tree/master/example).*
+
+In this execution mode LogBox runs locally (without hadoop) and simulates the execution of the job. It prints to stdout the files and the lines logbox would emit data into. 
+This way you can check wether your regexps are correct and you specified the input and output paths correctly.
+
+Assuming that you have the following [input file](https://github.com/prezi/logbox/blob/master/example/example-2013-10-22_00000):
+
+
+You would like to separate registrations and payments from this file into the `registration` and `payment` folder.
+
+In the [config.json](https://github.com/prezi/logbox/blob/master/example/config.json) file you can specify the rules that will be used to extract the required data:
 
 Execute LogBox in local test mode:
 
