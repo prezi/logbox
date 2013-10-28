@@ -1,11 +1,11 @@
 #Logbox
 
-Logbox is an efficient hadoop-based tool for tidying up huge amount of unstructured logs. 
-With logbox your logs lines can be reshaped and stored into several output locations within a single execution.
+Logbox is an efficient Hadoop-based tool for tidying up huge amounts of unstructured logs. 
+With Logbox your logs lines can be reshaped and stored into several output locations within a single execution.
 
 ## What, exactly?
 
-Imagine you have a huge unstructured log file at *s3://example-logs/example-2013-10-22_00000.lzo* a chuck of which looks like this:
+Imagine you have a huge unstructured log file at *s3://example-logs/example-2013-10-22_00000.lzo* a chunck of which looks like this:
 
 ```
 2013-10-22 12:12:12 app321 registration userid=12345 source=direct
@@ -23,10 +23,10 @@ You want to clean this up and have two separate log files:
 
 Also, you want log lines to be put into a directory nominated by the date the line is associated with.
 
-Finally, you want to get rid of the clutter and transform these lines into a better shape.
+Finally, you want to get rid of the clutter and transform these lines into better shape.
 
 
-Let's look at this configuration file (more explanation below):
+Let's look at this configuration file (there's more explanation below):
 
 ```javascript
 {
@@ -68,7 +68,7 @@ Let's look at this configuration file (more explanation below):
 }
 ```
 
-After executing logbox, you will have 2 new directories with the following content:
+After executing Logbox, you will have two new directories with the following content:
 
 ```
 s3://example-logs/logbox/registration/2013-10-22/example-2013-10-22:
@@ -83,13 +83,13 @@ s3://example-logs/logbox/payment/2013-10-22/example-2013-10-22
     2013-10-22 12:12:13 12345 PRO 159.00
 ```
 
-It's so simple.
+It's really that simple.
 
 
 ## Installation
 
 1. Checkout this project
-2. Download the dependencies and build the jar file containing all the dependencies:
+2. Download the dependencies and then build the jar file containing all the dependencies:
     
      `mvn clean compile assembly:single`
 
@@ -109,12 +109,12 @@ You will find your jar file here:
 
 | Parameter     | Description |
 | ------------- | ------------- |
-| -rd,--run                           |Run logbox on hadoop|
-| -rt,--local-test                    |Test logbox locally|
+| -rd,--run                           |Run Logbox on Hadoop|
+| -rt,--local-test                    |Test Logbox locally|
 | -cf,--config <file>                 |path to the config.json file|
-| -s,--start-date <date>              |The date to run logbox from (YYYY-MM-DD)
+| -s,--start-date <date>              |The date to run Logbox from (YYYY-MM-DD)
 | 				      |only applies to hadoop execution|
-| -e,--end-date <date>                |The date to run logbox until (YYYY-MM-DD) - only applies to hadoop execution|
+| -e,--end-date <date>                |The date to run Logbox until (YYYY-MM-DD) - only applies to Hadoop execution|
 | 				      |only applies to hadoop execution|
 | -f,--rule-filters <filter-list>     |Comma separated list of the rules to be executed, in the form of <logcategory>.<rulename>|
 |                                     |By default, each rule is executed|
@@ -128,11 +128,11 @@ You will find your jar file here:
  
 *Take a look at the [examples](https://github.com/prezi/logbox/tree/master/example).*
 
-In this execution mode LogBox runs locally (without hadoop) and simulates the execution of the job. 
-It prints to the names of the files and the lines logbox would emit data to *stdout*. 
-This way you can check wether your regexps are correct and you specified the input and output paths correctly.
+In this execution mode Logbox runs locally (without Hadoop) and simulates the execution of the job. 
+It prints the names of the files and the lines  within those files to *stdout*. 
+This way you can check whether your regexps are correct and if you specified the input and output paths correctly.
 
-Executing LogBox in local test mode:
+Executing Logbox in local test mode:
 
     java -jar target/logbox-1.0-SNAPSHOT-jar-with-dependencies.jar --local-test \
        --input-location example/example-2013-10-22_00000 \
@@ -169,31 +169,31 @@ The start and end dates specify the time range to process. (If start equals end,
 
 ### The config file
 
-Create a config file in JSON format. This is the hardest part of working with LogBox :)
+Create a config file in JSON format. This is the hardest part of working with Logbox :)
 
 The config file should contain the following information:
 
- * ```input_location_prefix```: where can the input logs be found? 
- * ```output_location```: where do you want the derived files to be stored?
- * ```input_compression``` and ```output_compression```: what is your input format and what is your desired output format? LogBox supports (splittable) lzo compression, so here you can write either "lzo" or "none". In case you want lzo files as output, LogBox will create index files as well.
- * ```input_filename``` and ```output_name_template```: naming convention of your filtered logfiles. You can specify with a regexp how the directories produced by LogBox should look like. This can be very useful if you want to aggregate your results, e.g. instead of having files containing logs of a 1-hour timespan, you can store your sorted logs in daily resolution.  Why might you need this? As indexing of lzo file scales not very well, it is not practical having hundreds or thousands of small lzo files.
- * ```max_line_length```: Maximal line length, all files longer than this number will be omitted 
+ * ```input_location_prefix```: Where can the input logs be found? 
+ * ```output_location```: Where do you want the derived files to be stored?
+ * ```input_compression``` and ```output_compression```: What is your input format and what is your desired output format? Logbox supports (splittable) lzo compression, so here you can write either "lzo" or "none". In case you want lzo files as your output, Logbox will create index files as well.
+ * ```input_filename``` and ```output_name_template```: The naming convention of your filtered logfiles. You can specify with a regexp how the directories produced by LogBox should look. This can be very useful if you want to aggregate your results, e.g. instead of having files containing logs of a 1-hour timespan, you can store your sorted logs in daily resolution.  Why might you need this? As the indexing of lzo files doesn't scale very well, it is not practical having hundreds or thousands of small lzo files.
+ * ```max_line_length```: Maximum line length, all files longer than this number will be omitted 
  * ```reducer_number```: Number of reducers for the MapReduce job
  * Filtering/Transformation rules: You can define categories. Each category has its own input path, described by the ```input_glob``` property. In each category, rules can be defined; these filters and transformations will be applied to the files that belong to the category. For each filtering rule you must provide the following properties:
   * a ```name``` and a ```description``` of your rule. This will help your co-workers to understand your intentions.
   * ```match```: a regular expression, possibly defining named groups, to identify fields of interest in the processed logline
-  * ```output_format```: how should the processed lines look?
-  * ```output_location```: the output directory of this rule. 
+  * ```output_format```: How should the processed lines look?
+  * ```output_location```: The output directory of this rule. 
 
-*Take a look at the [examples](https://github.com/prezi/logbox/tree/master/example)* which shows you how to set up a simple config.
+*Take a look at the [examples](https://github.com/prezi/logbox/tree/master/example)* which show you how to set up a simple config.
 
 #### Notes
 
-1. When running LogBox you may specify an already existing output directory, but be careful: 
-if the job should write into an already existing file LogBox WILL overwrite them without notification 
+1. When running Logbox you may specify an already existing output directory, but be careful: 
+if the job should write into an already existing file Logbox will overwrite them without notification 
 (unlike a standard hadoob job).
-2. LogBox will eliminate duplicate log lines from the input files.
+2. Logbox will eliminate duplicate log lines from the input files.
 
-**Have fun using LogBox!**
+**Have fun using Logbox!**
 
 
