@@ -18,7 +18,7 @@ Imagine you have a huge unstructured log file at *s3://example-logs/example-2013
 
 You want to clean this up and have two separate log files: 
  
- 1. one for the *regsistrations*, which will be stored in *s3://example-logs/logbox/registration*
+ 1. one for the *registrations*, which will be stored in *s3://example-logs/logbox/registration*
  2. an other one for *payment records*, which will be stored at  *s3://example-logs/logbox/payment*. 
 
 Also, you want log lines to be put into a directory nominated by the date the line is associated with.
