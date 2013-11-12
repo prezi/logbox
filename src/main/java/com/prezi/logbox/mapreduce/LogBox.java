@@ -40,6 +40,9 @@ public class LogBox extends Configured implements Tool {
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(NullWritable.class);
 
+        conf.setBoolean("mapred.map.tasks.speculative.execution",false);
+        conf.setBoolean("mapred.reduce.tasks.speculative.execution",false);
+
         job.setMapperClass(SubstituteLineMapper.class);
         job.setReducerClass(SubstituteLineReducer.class);
 
