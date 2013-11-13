@@ -12,7 +12,6 @@ public class SubstituteLineReducer  extends Reducer<Text, NullWritable, Text, Nu
 
     @Override
     protected void setup(Context context) throws IOException, InterruptedException {
-        // System.out.println("reducer setup: " + context.getTaskAttemptID().getTaskID().getId());
         multipleOutputs = new MultipleOutputs<Text, NullWritable>(context);
     }
 
@@ -34,8 +33,8 @@ public class SubstituteLineReducer  extends Reducer<Text, NullWritable, Text, Nu
         String locationDirectory = fields[lengthOfField - 1];
 
         multipleOutputs.write(new Text(substituted_line), NullWritable.get(), locationDirectory + "/part");
-        context.getCounter("Locations", locationDirectory).increment(1);
-        context.getCounter(LineCounter.SUBSTITUTED).increment(1);
+        // context.getCounter("Locations", locationDirectory).increment(1);
+        // context.getCounter(LineCounter.SUBSTITUTED).increment(1);
 
     }
 
