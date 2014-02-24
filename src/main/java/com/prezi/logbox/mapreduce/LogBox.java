@@ -43,6 +43,9 @@ public class LogBox extends Configured implements Tool {
         conf.setBoolean("mapred.map.tasks.speculative.execution",false);
         conf.setBoolean("mapred.reduce.tasks.speculative.execution",false);
 
+        // Reducers might take a long time to run
+        conf.setInt("mapred.task.timeout",60*60*1000);
+
         job.setMapperClass(SubstituteLineMapper.class);
         job.setReducerClass(SubstituteLineReducer.class);
 
