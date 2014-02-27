@@ -34,17 +34,20 @@ public class LogBox extends Configured implements Tool {
     }
 
     private Job createJob(Configuration conf) throws IOException {
+        conf.setBoolean("mapreduce.map.tasks.speculative.execution",false);
+        conf.setBoolean("mapreduce.reduce.tasks.speculative.execution",false);
+        conf.setBoolean("mapred.map.tasks.speculative.execution",false);
+        conf.setBoolean("mapred.reduce.tasks.speculative.execution",false);
+
+        // Reducers might take a long time to run
+        conf.setInt("mapreduce.task.timeout",60*60*1000);
+        conf.setInt("mapred.task.timeout",60*60*1000);
+
         Job job = new Job(conf, "logbox");
         job.setJarByClass(HadoopExecutor.class);
 
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(NullWritable.class);
-
-        conf.setBoolean("mapreduce.map.tasks.speculative.execution",false);
-        conf.setBoolean("mapreduce.reduce.tasks.speculative.execution",false);
-
-        // Reducers might take a long time to run
-        conf.setInt("mapreduce.task.timeout",60*60*1000);
 
         job.setMapperClass(SubstituteLineMapper.class);
         job.setReducerClass(SubstituteLineReducer.class);
