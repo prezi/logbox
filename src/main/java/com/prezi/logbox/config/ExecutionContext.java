@@ -60,7 +60,12 @@ public class ExecutionContext {
             c.setInputGlob(c.getInputGlob().replace("${date_glob}", commandLineArguments.getDateGlob()));
         }
     }
+    public void compileHourGlob(){
+        for (CategoryConfiguration c : getConfig().getCategoryConfigurations()){
 
+            c.setInputGlob(c.getInputGlob().replace("${hours_glob}", commandLineArguments.getHourGlob()));
+        }
+    }
     public String getLocalTestCategory() {
         return commandLineArguments.getLocalTestCategory();
     }

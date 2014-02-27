@@ -74,7 +74,9 @@ public class LogBox extends Configured implements Tool {
         String inputLocationPrefix = executionContext.getConfig().getInputLocationPrefix();
 
         for (CategoryConfiguration c : executionContext.getConfig().getCategoryConfigurations()) {
+            System.out.println("=== " + inputLocationPrefix);
             String inputLocation = inputLocationPrefix + c.getInputGlob();
+            System.out.println("--- " + inputLocation);
             log.info("Adding input glob: " + inputLocation);
             FileInputFormat.setInputPathFilter(job, IndexFilter.class);
             FileInputFormat.addInputPath(job, new Path(inputLocation));

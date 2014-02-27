@@ -34,7 +34,23 @@ public class CommandLineOptions {
                         .withArgName("date")
                         .create("e")
         );
+        _options.addOption(
+                OptionBuilder
+                        .withLongOpt("start-hour")
+                        .withDescription("The hour to run logbox from (00-24)")
+                        .hasArg()
+                        .withArgName("hour")
+                        .create("sh")
+        );
 
+        _options.addOption(
+                OptionBuilder
+                        .withLongOpt("end-hour")
+                        .withDescription("The hour to run logbox until (00-24)")
+                        .hasArg()
+                        .withArgName("hour")
+                        .create("eh")
+        );
         _options.addOption(
                 OptionBuilder
                         .withLongOpt("config")

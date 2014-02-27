@@ -42,6 +42,7 @@ public class HadoopExecutor extends Configured implements Executor
         URI uri = URI.create(temporalFilePrefix);
         fileSystem = FileSystem.get(uri, conf);
         executionContext.compileDateGlob();
+        executionContext.compileHourGlob();
 
         int exitCode = ToolRunner.run(conf, new LogBox(executionContext), cliArgs);
 

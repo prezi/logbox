@@ -27,6 +27,9 @@ public class CommandLineArguments {
     private String[] filters;
     private String configFileName;
     private String localTestInputFileName;
+    private String startHour;
+    private String endHour;
+    private String hourGlob;
 
     public CommandLineArguments() {
         commandLineOptions = new CommandLineOptions();
@@ -62,9 +65,40 @@ public class CommandLineArguments {
                 c.add(Calendar.DATE,1);
             }
             dateGlob = "{" + StringUtils.join(dates.toArray(), ',') + "}";
+            System.err.println("DATEGLOB: " + dateGlob);
         }
-
     }
+
+    public void calculateHourGlob() {
+        // SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+
+        if (startHour == endHour){
+            hourGlob = "000" + startHour;
+        } else {
+            ArrayList<String> hours = new ArrayList<String>();
+
+            int startAsInt = hourToInt(startHour);
+            int endAsInt = hourToInt(endHour);
+            for (int hour = startAsInt; hour <= endAsInt; hour++){
+                hours.add(hourToString(hour));
+            }
+            hourGlob = "{" + StringUtils.join(hours.toArray(), ',') + "}";
+        }
+        System.out.println("HOURGLOB: " + hourGlob);
+    }
+
+    private String hourToString(int hour) {
+        if (hour < 10) {
+            return "0" + hour;
+        } else {
+            return "" + hour;
+        }
+    }
+
+    private int hourToInt(String startHour) {
+        return Integer.parseInt(startHour);
+    }
+
 
     private void failWithCliParamError(final String error) {
         commandLineOptions.printCommandLineHelp();
@@ -91,15 +125,31 @@ public class CommandLineArguments {
         }
         return date;
     }
+    private String parseHour(CommandLine commandLine, String option) {
+        return commandLine.getOptionValue(option);
+    }
 
     private void processDates(CommandLine commandLine) {
         if (!commandLine.hasOption("start-date")) failWithCliParamError("Please specify a start-date");
         if (!commandLine.hasOption("end-date")) failWithCliParamError("Please specify an end-date");
 
         startDate = parseDate(commandLine, "start-date");
-        endDate =parseDate(commandLine, "end-date");
+        endDate = parseDate(commandLine, "end-date");
 
         calculateDateGlob();
+    }
+    private void processHours(CommandLine commandLine){
+        if (! commandLine.hasOption("start-hour")) {
+            startHour = "00";
+        } else {
+            startHour = parseHour(commandLine, "start-hour");
+        }
+        if (! commandLine.hasOption("end-hour")) {
+            endHour = "23";
+        } else {
+            endHour = parseHour(commandLine, "end-hour");
+        }
+        calculateHourGlob();
     }
 
     private void processLocalInput(CommandLine commandLine){
@@ -151,12 +201,14 @@ public class CommandLineArguments {
                 processLocalTestCategory(commandLine);
             }
             processConfigOption(commandLine);
-
+            processHours(commandLine);
             if (commandLine.hasOption("rule-filters")) {
                 filters = commandLine.getOptionValue("rule-filters").split(",");
             } else {
                 filters = null;
             }
+            System.out.println("start: " + startHour);
+            System.out.println("end: " + endHour);
         } catch (InvalidParameterException e) {
             System.err.println("ERROR " + e.getMessage());
             System.exit(103);
@@ -203,5 +255,9 @@ public class CommandLineArguments {
 
     public String getLocalTestInputFileName() {
         return localTestInputFileName;
+    }
+
+    public String getHourGlob() {
+        return hourGlob;
     }
 }
