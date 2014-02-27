@@ -15,7 +15,7 @@ public class LocalExecutor implements Executor {
         this.context = c;
     }
 
-    public void execute(String[] cliArgs) throws IOException {
+    public int execute(String[] cliArgs) throws IOException {
         String inputBaseName;
         try {
             inputBaseName = FileUtils.baseName(context.getLocalTestInputFileName());
@@ -38,6 +38,8 @@ public class LocalExecutor implements Executor {
             }
         }
         br.close();
+
+        return 0; // We leave all the errors throw an exception and abort execution
     }
 
 }

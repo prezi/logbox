@@ -40,11 +40,11 @@ public class LogBox extends Configured implements Tool {
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(NullWritable.class);
 
-        conf.setBoolean("mapred.map.tasks.speculative.execution",false);
-        conf.setBoolean("mapred.reduce.tasks.speculative.execution",false);
+        conf.setBoolean("mapreduce.map.tasks.speculative.execution",false);
+        conf.setBoolean("mapreduce.reduce.tasks.speculative.execution",false);
 
         // Reducers might take a long time to run
-        conf.setInt("mapred.task.timeout",60*60*1000);
+        conf.setInt("mapreduce.task.timeout",60*60*1000);
 
         job.setMapperClass(SubstituteLineMapper.class);
         job.setReducerClass(SubstituteLineReducer.class);
@@ -96,16 +96,15 @@ public class LogBox extends Configured implements Tool {
         conf.set("date_glob", executionContext.getDateGlob());
 
         Job job = createJob(conf);
-
+        Boolean executionSuccess = false;
         try {
-            job.waitForCompletion(true);
+            executionSuccess = job.waitForCompletion(true);
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
 
-        return 0;
+        return (executionSuccess ? 0 : 1);
     }
-
 }

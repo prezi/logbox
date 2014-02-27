@@ -2,6 +2,6 @@ package com.prezi.logbox.executor;
 
 public interface Executor {
 
-    public void execute(String[] cliArgs)
+    public int execute(String[] cliArgs)
     throws Exception;
 }

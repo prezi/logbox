@@ -23,7 +23,7 @@ public class HadoopExecutor extends Configured implements Executor
     private static Log log = LogFactory.getLog(HadoopExecutor.class);
     private ExecutionContext executionContext;
 
-;
+    ;
     private Boolean indexing;
 
     FileSystem fileSystem;
@@ -35,7 +35,7 @@ public class HadoopExecutor extends Configured implements Executor
     }
 
 
-    public void execute(String[] cliArgs) throws Exception {
+    public int execute(String[] cliArgs) throws Exception {
         Configuration conf = new Configuration();
 
         String temporalFilePrefix = executionContext.getConfig().getTemporalFilePrefix();
@@ -43,18 +43,22 @@ public class HadoopExecutor extends Configured implements Executor
         fileSystem = FileSystem.get(uri, conf);
         executionContext.compileDateGlob();
 
-        ToolRunner.run(conf, new LogBox(executionContext), cliArgs);
+        int exitCode = ToolRunner.run(conf, new LogBox(executionContext), cliArgs);
 
-        String[] directoryList = readTemporalFiles(temporalFilePrefix);
-        if (indexing) {
-            ToolRunner.run(new DistributedLzoIndexer(), directoryList);
-        } else {
-            for (String d : directoryList) {
-                System.out.println(d);
+        if (exitCode == 0){
+            String[] directoryList = readTemporalFiles(temporalFilePrefix);
+            if (indexing) {
+                exitCode = ToolRunner.run(new DistributedLzoIndexer(), directoryList);
+            } else {
+                for (String d : directoryList) {
+                    System.out.println(d);
+                }
             }
         }
 
         fileSystem.delete(new Path(executionContext.getConfig().getTemporalFilePrefix()), true);
+
+        return exitCode;
     }
 
     private String[] readTemporalFiles(String temporalFilePrefix) {
