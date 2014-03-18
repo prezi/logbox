@@ -12,7 +12,7 @@ import org.apache.commons.logging.LogFactory;
 public class App {
     private static Log log = LogFactory.getLog(App.class);
 
-    public static int main(String[] args) throws Exception {
+    public static void main(String[] args) throws Exception {
 
         ExecutionContext context = new ExecutionContext();
         context.setupFromCommandLineArgs(args);
@@ -24,6 +24,7 @@ public class App {
         else {
             executor = new HadoopExecutor(context);
         }
-        return executor.execute(args);
+        int exitCode = executor.execute(args);
+        System.exit(exitCode);
     }
 }
