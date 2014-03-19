@@ -14,6 +14,7 @@ import java.security.InvalidParameterException;
 import java.util.*;
 import com.google.code.regexp.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.UUID;
 
 public class LogBoxConfiguration implements Serializable {
 
@@ -47,7 +48,7 @@ public class LogBoxConfiguration implements Serializable {
     private transient Log log = LogFactory.getLog(LogBoxConfiguration.class);
 
     private transient Pattern outputBasenamePattern;
-
+    private String randomId;
 
     public String getInputCompression() {
         return inputCompression;
@@ -73,10 +74,11 @@ public class LogBoxConfiguration implements Serializable {
         return outputLocationBase;
     }
 
+    // TODO why do we have 2 function with very similar functionality?
+    // TODO fromConfig and loadConfig
     public static LogBoxConfiguration fromConfig(String configJSON){
         Gson gson = new Gson();
         LogBoxConfiguration conf = gson.fromJson(configJSON, LogBoxConfiguration.class);
-
         conf.setup();
         return conf;
     }
@@ -107,6 +109,7 @@ public class LogBoxConfiguration implements Serializable {
                     e.getIndex()
             );
         }
+        this.randomId = UUID.randomUUID().toString();
 
     }
 
@@ -270,7 +273,7 @@ public class LogBoxConfiguration implements Serializable {
     }
 
     public String getTemporalFilePrefix() {
-        return this.outputLocationBase + "/tmp/";
+        return this.outputLocationBase + "/tmp_" + this.randomId +"/";
     }
 
     public String getReducerNumberStr() {
