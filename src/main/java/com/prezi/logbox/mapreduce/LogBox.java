@@ -99,7 +99,7 @@ public class LogBox extends Configured implements Tool {
         Configuration conf = new Configuration();
         conf.setStrings("config.json", executionContext.getConfig().toJSON());
         conf.set("date_glob", executionContext.getDateGlob());
-
+        conf.set("temp_dir", executionContext.getTemporalDirectory());
         Job job = createJob(conf);
         Boolean executionSuccess = false;
         try {

@@ -48,7 +48,7 @@ public class LogBoxConfiguration implements Serializable {
     private transient Log log = LogFactory.getLog(LogBoxConfiguration.class);
 
     private transient Pattern outputBasenamePattern;
-    private String randomId;
+    //private String randomId;
 
     public String getInputCompression() {
         return inputCompression;
@@ -109,8 +109,6 @@ public class LogBoxConfiguration implements Serializable {
                     e.getIndex()
             );
         }
-        this.randomId = UUID.randomUUID().toString();
-
     }
 
     public void compileInputBaseName(String basename) {
@@ -273,7 +271,7 @@ public class LogBoxConfiguration implements Serializable {
     }
 
     public String getTemporalFilePrefix() {
-        return this.outputLocationBase + "/tmp_" + this.randomId +"/";
+        return this.outputLocationBase + "/tmp_";
     }
 
     public String getReducerNumberStr() {

@@ -38,7 +38,7 @@ public class HadoopExecutor extends Configured implements Executor
     public int execute(String[] cliArgs) throws Exception {
         Configuration conf = new Configuration();
 
-        String temporalFilePrefix = executionContext.getConfig().getTemporalFilePrefix();
+        String temporalFilePrefix = executionContext.getTemporalDirectory();
         URI uri = URI.create(temporalFilePrefix);
         fileSystem = FileSystem.get(uri, conf);
         executionContext.compileDateGlob();
@@ -57,7 +57,7 @@ public class HadoopExecutor extends Configured implements Executor
             }
         }
 
-        fileSystem.delete(new Path(executionContext.getConfig().getTemporalFilePrefix()), true);
+        fileSystem.delete(new Path(executionContext.getTemporalDirectory()), true);
 
         return exitCode;
     }

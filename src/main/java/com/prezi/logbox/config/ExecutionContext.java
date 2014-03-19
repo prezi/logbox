@@ -8,12 +8,14 @@ import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.UUID;
 
 public class ExecutionContext {
 
     private static Log log = LogFactory.getLog(ExecutionContext.class);
     private LogBoxConfiguration ruleConfig;
     private CommandLineArguments commandLineArguments;
+    private String randomId;
 
     public ExecutionMode getExecutionMode() {
         return commandLineArguments.getExecutionMode();
@@ -53,6 +55,7 @@ public class ExecutionContext {
         catch (Exception e){
             e.printStackTrace();
         }
+        this.randomId = UUID.randomUUID().toString();
     }
 
     public void compileDateGlob(){
@@ -81,4 +84,9 @@ public class ExecutionContext {
     public String getLocalTestInputFileName() {
         return commandLineArguments.getLocalTestInputFileName();
     }
+
+    public String getTemporalDirectory() {
+        return getConfig().getTemporalFilePrefix() + this.randomId +"/";
+    }
+
 }

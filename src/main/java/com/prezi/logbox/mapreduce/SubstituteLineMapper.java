@@ -43,7 +43,7 @@ public class SubstituteLineMapper extends Mapper<LongWritable, Text, Text, NullW
         inputPath = ((FileSplit) context.getInputSplit()).getPath().toString();
         String configJSON = context.getConfiguration().get("config.json");
         config = LogBoxConfiguration.fromConfig(configJSON);
-        temporalFilePrefix = config.getTemporalFilePrefix();
+        temporalFilePrefix = context.getConfiguration().get("temp_dir");
 
         try {
             inputBaseName = FileUtils.baseName(inputPath);
