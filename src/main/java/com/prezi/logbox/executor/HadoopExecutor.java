@@ -57,7 +57,7 @@ public class HadoopExecutor extends Configured implements Executor
             }
         }
 
-        //fileSystem.delete(new Path(executionContext.getTemporalDirectory()), true);
+        fileSystem.delete(new Path(executionContext.getTemporalDirectory()), true);
 
         return exitCode;
     }
