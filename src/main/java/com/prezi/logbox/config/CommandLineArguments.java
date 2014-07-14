@@ -64,7 +64,11 @@ public class CommandLineArguments {
                 dates.add(dateFormat.format(c.getTime()));
                 c.add(Calendar.DATE,1);
             }
-            dateGlob = "{" + StringUtils.join(dates.toArray(), ',') + "}";
+            if (dates.size() == 1){
+                dateGlob = dates.get(0);
+            } else {
+                dateGlob = "{" + StringUtils.join(dates.toArray(), ',') + "}";
+            }
             System.err.println("DATEGLOB: " + dateGlob);
         }
     }
@@ -82,7 +86,11 @@ public class CommandLineArguments {
             for (int hour = startAsInt; hour <= endAsInt; hour++){
                 hours.add(hourToString(hour));
             }
-            hourGlob = "{" + StringUtils.join(hours.toArray(), ',') + "}";
+            if (hours.size() == 1){
+                hourGlob = hours.get(0);
+            } else {
+                hourGlob = "{" + StringUtils.join(hours.toArray(), ',') + "}";
+            }
         }
         System.out.println("HOURGLOB: " + hourGlob);
     }
