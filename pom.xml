@@ -28,8 +28,8 @@
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-core</artifactId>
-            <version>1.0.3</version>
+            <artifactId>hadoop-client</artifactId>
+            <version>2.4.0</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -50,7 +50,7 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk</artifactId>
-            <version>1.5.1</version>
+            <version>1.9.13</version>
         </dependency>
     </dependencies>
     <build>

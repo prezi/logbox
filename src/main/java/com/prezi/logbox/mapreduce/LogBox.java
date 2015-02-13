@@ -43,7 +43,7 @@ public class LogBox extends Configured implements Tool {
         conf.setInt("mapreduce.task.timeout",60*60*1000);
         conf.setInt("mapred.task.timeout",60*60*1000);
 
-        Job job = new Job(conf, "logbox");
+        Job job = Job.getInstance(conf, "logbox");
         job.setJarByClass(HadoopExecutor.class);
 
         job.setOutputKeyClass(Text.class);
