@@ -11,6 +11,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
@@ -72,14 +73,19 @@ public class LogBox extends Configured implements Tool {
         FileOutputFormat.setCompressOutput(job, false);
 
         String inputLocationPrefix = executionContext.getConfig().getInputLocationPrefix();
+        FileSystem fs = FileSystem.get(conf);
 
         for (CategoryConfiguration c : executionContext.getConfig().getCategoryConfigurations()) {
             System.out.println("=== " + inputLocationPrefix);
             String inputLocation = inputLocationPrefix + c.getInputGlob();
             System.out.println("--- " + inputLocation);
-            log.info("Adding input glob: " + inputLocation);
-            FileInputFormat.setInputPathFilter(job, IndexFilter.class);
-            FileInputFormat.addInputPath(job, new Path(inputLocation));
+            if (fs.exists(new Path(inputLocation))){
+                log.info("Adding input glob: " + inputLocation);
+                FileInputFormat.setInputPathFilter(job, IndexFilter.class);
+                FileInputFormat.addInputPath(job, new Path(inputLocation));
+            }else {
+                log.warn("Input does not exist: " + inputLocation);
+            }
         }
 
         if ( executionContext.getConfig().getOutputCompression().equals("lzo")){
@@ -93,7 +99,6 @@ public class LogBox extends Configured implements Tool {
         return job;
     }
 
-    @Override
     public int run(String[] strings) throws Exception {
 
         Configuration conf = new Configuration();
