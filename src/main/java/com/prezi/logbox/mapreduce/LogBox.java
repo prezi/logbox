@@ -11,7 +11,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.s3.S3FileSystem;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
@@ -22,18 +24,21 @@ import org.apache.hadoop.mapreduce.lib.output.LazyOutputFormat;
 import org.apache.hadoop.util.Tool;
 
 import java.io.IOException;
+import java.net.URI;
 
 
 public class LogBox extends Configured implements Tool {
     private static Log log = LogFactory.getLog(LogBox.class);
     private ExecutionContext executionContext;
     final private int DEFAULT_NUMBER_OF_REDUCERS = 20;
+    final private String LOGBOX_VERSION = "1.1";
 
     public LogBox(ExecutionContext c) {
         this.executionContext = c;
     }
 
     private Job createJob(Configuration conf) throws IOException {
+        log.info("Starting logbox version: " + LOGBOX_VERSION );
         conf.setBoolean("mapreduce.map.tasks.speculative.execution",false);
         conf.setBoolean("mapreduce.reduce.tasks.speculative.execution",false);
         conf.setBoolean("mapred.map.tasks.speculative.execution",false);
@@ -77,9 +82,16 @@ public class LogBox extends Configured implements Tool {
             System.out.println("=== " + inputLocationPrefix);
             String inputLocation = inputLocationPrefix + c.getInputGlob();
             System.out.println("--- " + inputLocation);
+
             log.info("Adding input glob: " + inputLocation);
-            FileInputFormat.setInputPathFilter(job, IndexFilter.class);
-            FileInputFormat.addInputPath(job, new Path(inputLocation));
+
+            FileSystem fs = FileSystem.get(URI.create(inputLocation), job.getConfiguration());
+            if (fs.exists(new Path(inputLocation))) {
+                FileInputFormat.setInputPathFilter(job, IndexFilter.class);
+                FileInputFormat.addInputPath(job, new Path(inputLocation));
+            } else {
+                log.info("Missing input location: " + inputLocation);
+            }
         }
 
         if ( executionContext.getConfig().getOutputCompression().equals("lzo")){
@@ -93,7 +105,6 @@ public class LogBox extends Configured implements Tool {
         return job;
     }
 
-    @Override
     public int run(String[] strings) throws Exception {
 
         Configuration conf = new Configuration();
